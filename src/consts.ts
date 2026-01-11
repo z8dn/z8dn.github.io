@@ -4,7 +4,7 @@ export const SITE: Site = {
   title: 'z8dn',
   description:
     'Personal blog and portfolio of Zayden (z8dn) — thoughts, projects, and creative explorations.',
-  href: 'https://z8dn.github.io/blogfolio',
+  href: 'https://z8dn.github.io',
   author: 'z8dn',
   locale: 'en-US',
   featuredPostCount: 2,

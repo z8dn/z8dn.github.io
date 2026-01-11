@@ -20,7 +20,6 @@ import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig({
   site: 'https://z8dn.github.io',
-  base: '/blogfolio',
   integrations: [
     expressiveCode({
       themes: ['github-light', 'github-dark'],
