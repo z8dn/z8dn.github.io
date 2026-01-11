@@ -1,0 +1,37 @@
+---
+title: 'The Elephant in the Room'
+description: 'Part 1 of our Gradle optimization series: questioning "best practices" and squeezing 94% better configuration time out of your build.'
+date: 2026-01-11
+tags: ['gradle', 'optimization', 'performance']
+authors: ['z8dn']
+order: 1
+---
+
+What if everything you were told about Gradle "best practices" was wrong—or at least, incomplete?
+
+In this first part of the **Gradle Internals** series, we're addressing the elephant in the room: the literal cost of our build structures.
+
+## The Performance Paradox
+
+Many developers reach for `buildSrc` or composite builds as the "standard" way to manage complex build logic. But as projects grow, these structures often become the bottleneck. 
+
+Through my explorations, I've found that the way we define our plugins makes a massive difference. 
+
+### Precompiled Script Plugins vs. Class-based Plugins
+
+One of the most common patterns is using precompiled script plugins (`.gradle` or `.gradle.kts` files in `buildSrc` or a composite build). While they are easy to write, they come with a hidden cost in configuration time.
+
+When I switched from **precompiled script plugins** to **explicit class-based plugins** (written in Kotlin or Java), the results were staggering:
+
+- **94% improvement** in configuration time.
+- Significant reduction in total build time.
+
+## Why it matters
+
+Understanding these trade-offs isn't just about saving a few seconds; it's about the developer experience. A faster configuration phase means faster feedback loops and more productive developers.
+
+In the next sections, we'll dive into the code comparisons and how you can implement these changes in your own projects.
+
+---
+
+*This is a draft version of the content originally posted on Medium. Stay tuned for more deep dives into Gradle internals.*
