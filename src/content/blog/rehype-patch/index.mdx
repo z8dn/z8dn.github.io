@@ -4,7 +4,7 @@ description: 'Whenever you depend on Node packages with missing maintainers, pat
 date: 2025-03-21
 tags: ['v1.3.0']
 image: './banner.png'
-authors: ['enscribe']
+authors: ['z8dn']
 ---
 
 ## A problem (about dead maintainers)
@@ -15,7 +15,7 @@ I recently found myself caught between two syntax highlighting packages that I a
 
 The primary issue was that Expressive Code doesn't support inline syntax highlighting, which is non-negotiable for me since I need my inline code snippets to look as good as my code blocks (so I could do stuff like `console.log("Hello, world!".split('').reverse().join('')){:js}`). So I opened a feature request at [expressive-code/expressive-code#250](https://github.com/expressive-code/expressive-code/issues/250) and the maintainer seemed interested, saying they'd get around to it eventually. Implementing this feature is a lot easier said than done though, and I summarized it well in another thread:
 
-> [@jktrn](https://github.com/rehype-pretty/rehype-pretty-code/issues/247#issuecomment-2619869436): [...] expressive-code is already interested in implementing inline code support, but it would be a bit nuanced to add since it has to:
+> [@z8dn](https://github.com/rehype-pretty/rehype-pretty-code/issues/247#issuecomment-2619869436): [...] expressive-code is already interested in implementing inline code support, but it would be a bit nuanced to add since it has to:
 > 
 > - allow existing plugins to continue working normally with block-level code (without breaking changes),
 > - enable new plugins to explicitly declare support for inline code,
@@ -31,11 +31,11 @@ So I opened a feature request at [rehype-pretty/rehype-pretty-code#247](https://
 
 Fast forward a few months, and user [@kelvindecosta](https://github.com/kelvindecosta) comments on my issue:
 
-> [[@kelvindecosta]](https://github.com/rehype-pretty/rehype-pretty-code/issues/247#issuecomment-2610536000): Hey [@jktrn](https://github.com/jktrn), did you figure out a workaround for this? I'm interested in setting this up alongside expressive-code.
+> [[@kelvindecosta]](https://github.com/rehype-pretty/rehype-pretty-code/issues/247#issuecomment-2610536000): Hey [@z8dn](https://github.com/z8dn), did you figure out a workaround for this? I'm interested in setting this up alongside expressive-code.
 
 After I replied that I hadn't figured out a workaround yet, they sent me a brilliantly hacky solution a couple days later:
 
-> [[@kelvindecosta]](https://github.com/rehype-pretty/rehype-pretty-code/issues/247#issuecomment-2619666231): Hey again @jktrn, I have found an unconventional way to achieve this.
+> [[@kelvindecosta]](https://github.com/rehype-pretty/rehype-pretty-code/issues/247#issuecomment-2619666231): Hey again @z8dn, I have found an unconventional way to achieve this.
 > 
 > If you're using pnpm or bun, you can use their patch functionality to customize the contents of the `node_modules/rehype-pretty-code` package.
 > 
