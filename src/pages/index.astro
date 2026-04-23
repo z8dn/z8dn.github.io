@@ -1,68 +1,414 @@
 ---
-import BlogCard from '@/components/BlogCard.astro'
 import Link from '@/components/Link.astro'
 import PageHead from '@/components/PageHead.astro'
 import { buttonVariants } from '@/components/ui/button'
-import { SITE } from '@/consts'
 import Layout from '@/layouts/Layout.astro'
-import { getRecentPosts } from '@/lib/data-utils'
+import { Icon } from 'astro-icon/components'
 
-const blog = await getRecentPosts(SITE.featuredPostCount)
+// Fetch GitHub contributions from both accounts at build time
+interface GhContribution { date: string; count: number }
+
+let ghContributions: GhContribution[] = [];
+let ghTotal = 0;
+
+try {
+  const [r1, r2] = await Promise.all([
+    fetch('https://github-contributions-api.jogruber.de/v4/z8dn?y=last'),
+    fetch('https://github-contributions-api.jogruber.de/v4/z8dn-anz?y=last'),
+  ]);
+  const [d1, d2] = await Promise.all([r1.json(), r2.json()]);
+
+  const merged = new Map<string, number>();
+  const add = (list: { date: string; count: number }[]) =>
+    list.forEach(c => merged.set(c.date, (merged.get(c.date) ?? 0) + c.count));
+  add(d1.contributions ?? []);
+  add(d2.contributions ?? []);
+
+  ghContributions = [...merged.entries()]
+    .map(([date, count]) => ({ date, count }))
+    .sort((a, b) => a.date.localeCompare(b.date));
+  ghTotal = ghContributions.reduce((s, c) => s + c.count, 0);
+} catch (e) {
+  console.warn('[index] GitHub contributions fetch failed:', e);
+}
+
+const ghData = JSON.stringify({ contributions: ghContributions, total: ghTotal });
 ---
 
 <Layout class="max-w-3xl">
   <PageHead slot="head" title="Home" />
-  <section class="rounded-lg border">
-    <div class="flex flex-col space-y-1.5 p-6">
-      <h3 class="text-3xl leading-none font-medium">Hey, I'm Zayden 👋</h3>
-      <p class="text-muted-foreground text-sm">
-        also known as <span class="font-medium">z8dn</span>
+  <div class="bg-grid" aria-hidden="true"></div>
+
+  <!--
+    Staggered bento layout (3-col grid, explicit placement):
+
+    col:  1          2          3
+    row1: [location] [about     about    ]
+    row2: [career  ] [about     about    ]
+    row3: [career  ] [timecod   timecod  ]
+    row4: [github   github    github     ]
+  -->
+  <section class="grid grid-cols-3 gap-2 max-sm:block max-sm:space-y-2">
+
+    <!-- Location / Now — col1 row1 -->
+    <div class="[grid-column:1] [grid-row:1] flex flex-col gap-y-3 rounded-[0.625rem] border bg-background p-4">
+      <div>
+        <p class="text-muted-foreground flex items-center gap-1.5 text-[0.6875rem] font-medium tracking-[0.08em] uppercase mb-2">
+          <Icon name="lucide:map-pin" class="size-[11px]" />
+          Location
+        </p>
+        <div class="flex items-center gap-2">
+          <p class="text-[0.875rem] font-medium">Ho Chi Minh City</p>
+          <span id="online-dot" class="inline-flex items-center gap-1 rounded-full border px-1.5 py-0.5 text-[0.6rem] font-medium tracking-wide uppercase">
+            <span class="size-1.5 rounded-full bg-muted-foreground/40" id="online-dot-circle"></span>
+            <span id="online-dot-label" class="text-muted-foreground">Offline</span>
+          </span>
+        </div>
+        <p class="text-muted-foreground text-[0.75rem]">Vietnam · UTC+7</p>
+      </div>
+      <div>
+        <p class="text-muted-foreground flex items-center gap-1.5 text-[0.6875rem] font-medium tracking-[0.08em] uppercase mb-2">
+          <Icon name="lucide:zap" class="size-[11px]" />
+          Now
+        </p>
+        <p class="text-muted-foreground text-[0.8125rem] leading-[1.6]" style="text-wrap:pretty">
+          Improving CI/CD and DX at ANZ Plus. Writing about Gradle internals.
+        </p>
+      </div>
+      <div>
+        <p class="text-muted-foreground flex items-center gap-1.5 text-[0.6875rem] font-medium tracking-[0.08em] uppercase mb-2">
+          <Icon name="lucide:activity" class="size-[11px]" />
+          Off hours
+        </p>
+        <p class="text-muted-foreground text-[0.8125rem] leading-[1.6]">
+          Badminton
+        </p>
+      </div>
+    </div>
+
+    <!-- About / Hero — col2-3 row1-2 (tall) -->
+    <div class="[grid-column:2/4] [grid-row:1/3] flex flex-col gap-y-3 rounded-[0.625rem] border bg-background p-4">
+      <div>
+        <h1 class="text-[1.375rem] font-semibold tracking-[-0.03em] leading-tight">Hey, I'm Zayden 👋</h1>
+        <p class="text-muted-foreground mt-0.5 text-[0.8125rem]">
+          also known as <span class="text-foreground font-medium">z8dn</span>
+        </p>
+      </div>
+      <p class="text-muted-foreground text-[0.8125rem] leading-[1.65] grow" style="text-wrap:pretty">
+        Technical Lead at ANZ Plus, based in Ho Chi Minh City. I build high-quality
+        Android apps and developer tools — passionate about clean architecture,
+        performance, and great developer experience.
       </p>
     </div>
-    <div class="p-6 pt-0">
-      <p class="text-muted-foreground mb-2 text-sm">
-        Welcome to my corner of the internet! This is where I share my thoughts,
-        projects, and creative explorations. I'm passionate about building
-        things, learning new technologies, and documenting my journey along the
-        way.
+
+    <!-- Social links — col2 row3 -->
+    <div class="[grid-column:2] [grid-row:3] rounded-[0.625rem] border bg-background p-4">
+      <p class="text-muted-foreground flex items-center gap-1.5 text-[0.6875rem] font-medium tracking-[0.08em] uppercase mb-4">
+        <Icon name="lucide:at-sign" class="size-[11px]" />
+        Connect
       </p>
-      <p class="text-muted-foreground text-sm">
-        Feel free to explore my <Link
-          href="/blog"
-          class="text-foreground"
-          underline>blog posts</Link
-        >, check out my <Link href="/projects" class="text-foreground" underline
-          >projects</Link
-        >, or <Link
-          href="mailto:phunggiabuu30@gmail.com"
-          class="text-foreground"
-          underline
-          external>get in touch</Link
-        >.
-      </p>
+      <div class="grid grid-cols-2 gap-2">
+        {[
+          { href: 'https://github.com/z8dn', icon: 'lucide:github', label: 'GitHub', sub: 'z8dn', external: true },
+          { href: 'https://twitter.com/z8dn', icon: 'lucide:twitter', label: 'Twitter', sub: '@z8dn', external: true },
+          { href: 'mailto:phunggiabuu30@gmail.com', icon: 'lucide:mail', label: 'Email', sub: 'Get in touch', external: false },
+          { href: '/rss.xml', icon: 'lucide:rss', label: 'RSS', sub: 'Subscribe', external: true },
+        ].map(s => (
+          <a href={s.href} target={s.external ? '_blank' : undefined} rel={s.external ? 'noopener noreferrer' : undefined}
+             class="flex items-center gap-3 rounded-[0.5rem] px-3 py-2.5 transition-colors hover:bg-muted/70">
+            <Icon name={s.icon} class="size-4 text-muted-foreground shrink-0" />
+            <div class="min-w-0">
+              <p class="text-[0.8rem] font-medium leading-snug">{s.label}</p>
+              <p class="text-muted-foreground text-[0.72rem] truncate">{s.sub}</p>
+            </div>
+          </a>
+        ))}
+      </div>
     </div>
-  </section>
-  <section class="flex flex-col gap-y-4">
-    <h2 class="text-2xl font-medium">Latest posts</h2>
-    <ul class="flex flex-col gap-y-4">
-      {
-        blog.map((post) => (
-          <li>
-            <BlogCard entry={post} />
-          </li>
-        ))
-      }
-    </ul>
-    <div class="flex justify-center">
+
+    <!-- Career timeline — col1 row2-3 -->
+    <div class="[grid-column:1] [grid-row:2/4] flex flex-col gap-y-3 rounded-[0.625rem] border bg-background p-4">
+      <p class="text-muted-foreground flex items-center gap-1.5 text-[0.6875rem] font-medium tracking-[0.08em] uppercase">
+        <Icon name="lucide:briefcase" class="size-[11px]" />
+        Career
+      </p>
+      <ol class="flex flex-col grow">
+        <li class="flex gap-3 items-stretch">
+          <div class="flex flex-col items-center">
+            <span class="mt-[5px] size-2 rounded-full bg-foreground shrink-0 ring-2 ring-background ring-offset-1 ring-offset-background"></span>
+            <span class="w-px flex-1 bg-border mt-1"></span>
+          </div>
+          <div class="pb-4">
+            <p class="text-[0.8rem] font-medium leading-snug">Technical Lead</p>
+            <p class="text-muted-foreground text-[0.75rem]">HCLTech · ANZ Plus</p>
+            <p class="text-muted-foreground/60 text-[0.7rem] font-mono mt-0.5">Apr 2025 – now</p>
+          </div>
+        </li>
+        <li class="flex gap-3">
+          <div class="flex flex-col items-center">
+            <span class="mt-[5px] size-2 rounded-full bg-muted-foreground/40 shrink-0 ring-2 ring-background ring-offset-1 ring-offset-background"></span>
+          </div>
+          <div>
+            <p class="text-[0.8rem] font-medium leading-snug">Android Engineer</p>
+            <p class="text-muted-foreground text-[0.75rem]">NAVER</p>
+            <p class="text-muted-foreground/60 text-[0.7rem] font-mono mt-0.5">2023 – 2025</p>
+          </div>
+        </li>
+      </ol>
       <Link
-        href="/blog"
-        class={buttonVariants({ variant: 'ghost' }) + ' group'}
+        href="/about"
+        class={buttonVariants({ variant: 'ghost', size: 'sm' }) + ' group -ml-2 self-start gap-1 transition-[gap] hover:gap-2'}
       >
-        See all posts <span
-          class="ml-1.5 transition-transform group-hover:translate-x-1"
-          >&rarr;</span
-        >
+        Full timeline <Icon name="lucide:arrow-right" class="size-3" />
       </Link>
     </div>
+
+    <!-- Skills / WakaTime — col3 row3 (narrow) -->
+    <div class="[grid-column:3] [grid-row:3] rounded-[0.625rem] border bg-background p-4">
+      <p class="text-muted-foreground flex items-center gap-1.5 text-[0.6875rem] font-medium tracking-[0.08em] uppercase mb-3">
+        <Icon name="lucide:bar-chart-2" class="size-[11px]" />
+        Time coding
+      </p>
+      <div class="flex flex-col gap-2" id="skills-chart"></div>
+    </div>
+
+    <!-- GitHub contributions — col1-3 row4 (last) -->
+    <div class="[grid-column:1/4] [grid-row:4] rounded-[0.625rem] border bg-background p-4">
+      <p class="text-muted-foreground flex items-center gap-1.5 text-[0.6875rem] font-medium tracking-[0.08em] uppercase mb-3">
+        <Icon name="lucide:github" class="size-[11px]" />
+        GitHub contributions
+      </p>
+      <div id="gh-graph-container"></div>
+    </div>
+
   </section>
 </Layout>
+
+<!-- GitHub contribution data (build-time fetched) -->
+<script id="gh-data" type="application/json" set:html={ghData}></script>
+
+<style is:global>
+  :root {
+    --gh-0: #ebedf0;
+    --gh-1: #9be9a8;
+    --gh-2: #40c463;
+    --gh-3: #30a14e;
+    --gh-4: #216e39;
+  }
+  [data-theme='dark'] {
+    --gh-0: #161b22;
+    --gh-1: #0e4429;
+    --gh-2: #006d32;
+    --gh-3: #26a641;
+    --gh-4: #39d353;
+  }
+  .gh-graph-wrap { display: flex; gap: 4px; }
+  .gh-day-labels { flex-shrink: 0; width: 20px; display: flex; flex-direction: column; gap: 2px; padding-top: 16px; }
+  .gh-day-label {
+    font-size: 9px; color: var(--muted-foreground);
+    font-family: 'Geist Mono', ui-monospace, monospace;
+    text-align: right; padding-right: 3px; line-height: 1;
+  }
+  .gh-weeks-outer { display: flex; flex-direction: column; gap: 3px; flex: 1; min-width: 0; }
+  .gh-month-row { display: flex; gap: 2px; height: 12px; align-items: flex-end; }
+  .gh-month-label {
+    font-size: 9px; color: var(--muted-foreground);
+    font-family: 'Geist Mono', ui-monospace, monospace;
+    white-space: nowrap; overflow: visible;
+  }
+  .gh-weeks { display: flex; gap: 2px; }
+  .gh-week { display: flex; flex-direction: column; gap: 2px; flex: 1; }
+  .gh-cell { border-radius: 2px; background: var(--gh-0); flex-shrink: 0; aspect-ratio: 1; width: 100%; }
+  .gh-cell[data-level="1"] { background: var(--gh-1); }
+  .gh-cell[data-level="2"] { background: var(--gh-2); }
+  .gh-cell[data-level="3"] { background: var(--gh-3); }
+  .gh-cell[data-level="4"] { background: var(--gh-4); }
+  .gh-legend-cell {
+    width: 10px; height: 10px; border-radius: 2px;
+    background: var(--gh-0); display: inline-block;
+  }
+  .gh-legend-cell[data-level="1"] { background: var(--gh-1); }
+  .gh-legend-cell[data-level="2"] { background: var(--gh-2); }
+  .gh-legend-cell[data-level="3"] { background: var(--gh-3); }
+  .gh-legend-cell[data-level="4"] { background: var(--gh-4); }
+
+  /* Background grid */
+  .bg-grid {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background-image:
+      linear-gradient(to right, var(--border) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--border) 1px, transparent 1px);
+    background-size: 40px 40px;
+    -webkit-mask-image: radial-gradient(ellipse 70% 65% at 50% 35%, black 0%, transparent 100%);
+    mask-image: radial-gradient(ellipse 70% 65% at 50% 35%, black 0%, transparent 100%);
+    pointer-events: none;
+  }
+
+  /* Skills bar chart */
+  .skill-row { display: flex; align-items: center; gap: 10px; }
+  .skill-icon {
+    width: 28px; height: 28px; border-radius: 6px;
+    background: var(--muted); flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 700;
+    font-family: 'Geist Mono', ui-monospace, monospace;
+    color: var(--muted-foreground);
+    letter-spacing: -0.03em;
+  }
+  [data-theme='dark'] .skill-icon { background: oklch(0.22 0 0); }
+  .skill-bar-wrap { flex: 1; position: relative; height: 14px; }
+  .skill-bar-bg { position: absolute; inset: 0; background: var(--muted); border-radius: 3px; }
+  [data-theme='dark'] .skill-bar-bg { background: oklch(0.2 0 0); }
+  .skill-bar-fill {
+    position: absolute; top: 0; left: 0; height: 100%; border-radius: 3px;
+    background: var(--foreground); opacity: 0.15;
+    transition: width 0.6s cubic-bezier(0.16,1,0.3,1);
+  }
+  [data-theme='dark'] .skill-bar-fill { opacity: 0.35; }
+  .skill-hours {
+    font-size: 11px; font-family: 'Geist Mono', ui-monospace, monospace;
+    color: var(--muted-foreground); width: 36px; text-align: right; flex-shrink: 0;
+  }
+</style>
+
+<script>
+  // ── Online dot (9AM–9PM UTC+7) ───────────────────────────────────────────
+  (function checkOnline() {
+    const dot = document.getElementById('online-dot');
+    if (!dot) return;
+    const utc7Hour = (new Date().getUTCHours() + 7) % 24;
+    const circle = document.getElementById('online-dot-circle');
+    const label = document.getElementById('online-dot-label');
+    if (utc7Hour >= 9 && utc7Hour < 21) {
+      circle?.classList.replace('bg-muted-foreground/40', 'bg-emerald-500');
+      if (label) label.textContent = 'Online';
+    }
+  })();
+
+  // ── GitHub contribution graph ─────────────────────────────────────────────
+  (function buildGhGraph() {
+    const raw = document.getElementById('gh-data');
+    if (!raw) return;
+
+    let contributions: { date: string; count: number }[] = [];
+    let total = 0;
+    try {
+      const parsed = JSON.parse(raw.textContent ?? '{}');
+      contributions = parsed.contributions ?? [];
+      total = parsed.total ?? 0;
+    } catch { return; }
+
+    const dateMap = new Map(contributions.map(c => [c.date, c.count]));
+
+    // Level thresholds (quartiles of active days)
+    const nonZero = contributions.map(c => c.count).filter(c => c > 0).sort((a, b) => a - b);
+    const p = (pct: number) => nonZero[Math.floor(nonZero.length * pct)] ?? 1;
+    const [t1, t2, t3] = [p(0.25), p(0.5), p(0.75)];
+    const getLevel = (n: number) => !n ? 0 : n <= t1 ? 1 : n <= t2 ? 2 : n <= t3 ? 3 : 4;
+
+    // Sunday-aligned weeks ending today
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const cursor = new Date(today);
+    cursor.setDate(cursor.getDate() - today.getDay());
+    cursor.setDate(cursor.getDate() - 52 * 7);
+
+    const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const weeks: ({ date: string; level: number } | null)[][] = [];
+    const monthLabels: { weekIdx: number; label: string }[] = [];
+    let lastMonth = -1;
+
+    while (cursor <= today) {
+      const week: ({ date: string; level: number } | null)[] = [];
+      for (let d = 0; d < 7; d++) {
+        if (cursor > today) { week.push(null); }
+        else {
+          const key = cursor.toISOString().slice(0, 10);
+          week.push({ date: key, level: getLevel(dateMap.get(key) ?? 0) });
+        }
+        cursor.setDate(cursor.getDate() + 1);
+      }
+      const first = week.find(x => x !== null);
+      if (first) {
+        const m = new Date(first.date).getMonth();
+        if (m !== lastMonth) { monthLabels.push({ weekIdx: weeks.length, label: MONTHS[m] }); lastMonth = m; }
+      }
+      weeks.push(week);
+    }
+
+    const totalLabel = document.getElementById('gh-total-label');
+    if (totalLabel) totalLabel.textContent = `${total.toLocaleString()} contributions in the last year`;
+
+    const container = document.getElementById('gh-graph-container');
+    if (!container) return;
+
+    const wrap = document.createElement('div'); wrap.className = 'gh-graph-wrap';
+
+    // Weeks section (fills remaining width)
+    const weeksOuter = document.createElement('div'); weeksOuter.className = 'gh-weeks-outer';
+
+    // Month row — one spacer per week, label only where month changes
+    const monthRow = document.createElement('div'); monthRow.className = 'gh-month-row';
+    const mlMap = new Map(monthLabels.map(ml => [ml.weekIdx, ml.label]));
+    weeks.forEach((_, wi) => {
+      const el = document.createElement('div');
+      el.className = 'gh-week';
+      if (mlMap.has(wi)) {
+        const span = document.createElement('span'); span.className = 'gh-month-label';
+        span.textContent = mlMap.get(wi)!;
+        el.appendChild(span);
+      }
+      monthRow.appendChild(el);
+    });
+    weeksOuter.appendChild(monthRow);
+
+    // Week columns
+    const weeksRow = document.createElement('div'); weeksRow.className = 'gh-weeks';
+    weeks.forEach(week => {
+      const weekEl = document.createElement('div'); weekEl.className = 'gh-week';
+      week.forEach(day => {
+        const cell = document.createElement('div'); cell.className = 'gh-cell';
+        if (day) {
+          cell.setAttribute('data-level', String(day.level));
+          cell.title = `${day.date} · ${dateMap.get(day.date) ?? 0}`;
+        } else {
+          cell.style.visibility = 'hidden';
+        }
+        weekEl.appendChild(cell);
+      });
+      weeksRow.appendChild(weekEl);
+    });
+    weeksOuter.appendChild(weeksRow);
+    wrap.appendChild(weeksOuter);
+    container.appendChild(wrap);
+  })();
+
+  // ── Skills bar chart ──────────────────────────────────────────────────────
+  (function buildSkills() {
+    const skills = [
+      { label: 'KT',  name: 'Kotlin',     hours: 842 },
+      { label: 'TS',  name: 'TypeScript', hours: 721 },
+      { label: 'GR',  name: 'Gradle',     hours: 398 },
+      { label: 'AN',  name: 'Android',    hours: 310 },
+      { label: 'A',   name: 'Astro',      hours: 203 },
+      { label: 'MDX', name: 'MDX',        hours: 167 },
+      { label: 'PY',  name: 'Python',     hours: 134 },
+    ];
+    const max = skills[0].hours;
+    const container = document.getElementById('skills-chart');
+    if (!container) return;
+    skills.forEach(s => {
+      const row = document.createElement('div'); row.className = 'skill-row';
+      row.innerHTML = `
+        <div class="skill-icon" title="${s.name}">${s.label}</div>
+        <div class="skill-bar-wrap">
+          <div class="skill-bar-bg"></div>
+          <div class="skill-bar-fill" style="width:${(s.hours / max * 100).toFixed(1)}%"></div>
+        </div>
+        <span class="skill-hours">${s.hours}h</span>
+      `;
+      container.appendChild(row);
+    });
+  })();
+</script>
