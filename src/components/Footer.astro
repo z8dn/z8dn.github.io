@@ -1,6 +1,7 @@
 ---
 import { Separator } from '@/components/ui/separator'
 import Link from './Link.astro'
+import { Icon } from 'astro-icon/components'
 ---
 
 <footer
@@ -11,11 +12,11 @@ import Link from './Link.astro'
   </span>
   <Separator orientation="vertical" className="hidden h-4! sm:block" />
   <p class="text-muted-foreground text-sm">
-    Made with 🤍 by <Link
+    Made with <a href="https://claude.ai" target="_blank" rel="noopener noreferrer" aria-label="Claude" class="inline-flex items-center align-middle mx-0.5 text-muted-foreground hover:text-foreground transition-colors"><Icon name="simple-icons:claude" class="size-[0.85rem]" /></a> by <Link
       href="https://github.com/z8dn"
       class="text-foreground"
       external
       underline>z8dn</Link
-    >!
+    >
   </p>
 </footer>

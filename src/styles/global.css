@@ -1,14 +1,16 @@
 @import 'tailwindcss';
+@import '@fontsource-variable/outfit';
+@import '@fontsource-variable/jetbrains-mono';
 
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 
 @theme inline {
   --font-sans:
-    Geist, ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji',
-    'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    'Outfit Variable', Geist, ui-sans-serif, system-ui, sans-serif,
+    'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   --font-mono:
-    Geist Mono, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
-    'Liberation Mono', 'Courier New', monospace;
+    'JetBrains Mono Variable', 'Geist Mono', ui-monospace, SFMono-Regular,
+    Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -42,28 +44,30 @@
   font-display: swap;
 }
 
+/* ── Catppuccin Latte (light) ────────────────────────────────────────────── */
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+  --background:         #eff1f5;
+  --foreground:         #4c4f69;
+  --primary:            #4c4f69;
+  --primary-foreground: #eff1f5;
+  --muted:              #ccd0da;
+  --muted-foreground:   #7c7f93;
+  --destructive:        #d20f39;
+  --border:             #bcc0cc;
+  --ring:               #1e66f5;
 }
 
+/* ── Catppuccin Mocha (dark) ─────────────────────────────────────────────── */
 [data-theme='dark'] {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --ring: oklch(0.556 0 0);
+  --background:         #1e1e2e;
+  --foreground:         #cdd6f4;
+  --primary:            #cdd6f4;
+  --primary-foreground: #1e1e2e;
+  --muted:              #313244;
+  --muted-foreground:   #9399b2;
+  --destructive:        #f38ba8;
+  --border:             #45475a;
+  --ring:               #89b4fa;
 }
 
 @layer base {
