@@ -73,7 +73,7 @@ export default defineConfig({
     plugins: [tailwindcss()],
   },
   server: {
-    port: 1234,
+    port: process.env.PORT ? parseInt(process.env.PORT) : 1234,
     host: true,
   },
   devToolbar: {
