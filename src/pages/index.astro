@@ -67,7 +67,7 @@ try {
 const ghData = JSON.stringify({ contributions: ghContributions, total: ghTotal });
 ---
 
-<Layout class="max-w-3xl">
+<Layout class="max-w-6xl">
   <PageHead slot="head" title="Home" />
   <div class="bg-grid" aria-hidden="true"></div>
 
@@ -78,10 +78,10 @@ const ghData = JSON.stringify({ contributions: ghContributions, total: ghTotal }
     row3: [activity     ][social       ][time-coding]
     row4: [latest-post  ][·············][time-coding]
   -->
-  <section class="grid grid-cols-3 gap-1.5 max-sm:block max-sm:space-y-2">
+  <section class="grid grid-cols-3 gap-1.5 lg:gap-2.5 max-sm:block max-sm:space-y-2">
 
     <!-- Intro — col1-2 row1 -->
-    <div class="[grid-column:1/3] [grid-row:1] flex flex-col justify-center rounded-[0.625rem] border bg-background p-2.5">
+    <div class="[grid-column:1/3] [grid-row:1] flex flex-col justify-center rounded-[0.625rem] border bg-background p-2.5 lg:p-5">
       <h1 class="text-[1.75rem] font-semibold tracking-[-0.04em] leading-tight">Hey, I'm Zayden 👋</h1>
       <p class="text-muted-foreground mt-0.5 text-[0.8125rem]">
         also known as <span class="text-foreground font-medium">z8dn</span>
@@ -92,7 +92,7 @@ const ghData = JSON.stringify({ contributions: ghContributions, total: ghTotal }
     </div>
 
     <!-- Location / Now — col1 row2 -->
-    <div class="[grid-column:1] [grid-row:2] flex flex-col gap-y-2 rounded-[0.625rem] border bg-background p-2.5">
+    <div class="[grid-column:1] [grid-row:2] flex flex-col gap-y-2 rounded-[0.625rem] border bg-background p-2.5 lg:p-5">
       <div>
         <p class="text-muted-foreground flex items-center gap-1.5 text-[0.6875rem] font-medium tracking-[0.08em] uppercase mb-2">
           <Icon name="lucide:map-pin" class="size-[11px]" />
@@ -115,7 +115,7 @@ const ghData = JSON.stringify({ contributions: ghContributions, total: ghTotal }
       href={featuredProject.url}
       target="_blank"
       rel="noopener noreferrer"
-      class="[grid-column:2] [grid-row:2] bento-link rounded-[0.625rem] border bg-background p-2.5 flex flex-col gap-y-2 group "
+      class="[grid-column:2] [grid-row:2] bento-link rounded-[0.625rem] border bg-background p-2.5 lg:p-5 flex flex-col gap-y-2 group "
     >
       <p class="text-muted-foreground flex items-center gap-1.5 text-[0.6875rem] font-medium tracking-[0.08em] uppercase">
         <Icon name="lucide:box" class="size-[11px]" />
@@ -146,7 +146,7 @@ const ghData = JSON.stringify({ contributions: ghContributions, total: ghTotal }
     </a>
 
     <!-- Career timeline — col3 rows1-2 -->
-    <div class="[grid-column:3] [grid-row:1/3] flex flex-col gap-y-2 rounded-[0.625rem] border bg-background p-2.5">
+    <div class="[grid-column:3] [grid-row:1/3] flex flex-col gap-y-2 rounded-[0.625rem] border bg-background p-2.5 lg:p-5">
       <p class="text-muted-foreground flex items-center gap-1.5 text-[0.6875rem] font-medium tracking-[0.08em] uppercase">
         <Icon name="lucide:briefcase" class="size-[11px]" />
         Career
@@ -183,7 +183,7 @@ const ghData = JSON.stringify({ contributions: ghContributions, total: ghTotal }
     </div>
 
     <!-- Skills / WakaTime — col3 rows3-4 -->
-    <div class="[grid-column:3] [grid-row:3/5] rounded-[0.625rem] border bg-background p-2.5">
+    <div class="[grid-column:3] [grid-row:3/5] rounded-[0.625rem] border bg-background p-2.5 lg:p-5">
       <p class="text-muted-foreground flex items-center gap-1.5 text-[0.6875rem] font-medium tracking-[0.08em] uppercase mb-2">
         <Icon name="lucide:bar-chart-2" class="size-[11px]" />
         Time coding
@@ -213,7 +213,7 @@ const ghData = JSON.stringify({ contributions: ghContributions, total: ghTotal }
     </div>
 
     <!-- Activity heatmap — col1 row3 -->
-    <div class="[grid-column:1] [grid-row:3] rounded-[0.625rem] border bg-background p-2.5">
+    <div class="[grid-column:1] [grid-row:3] rounded-[0.625rem] border bg-background p-2.5 lg:p-5">
       <p class="text-muted-foreground flex items-center gap-1.5 text-[0.6875rem] font-medium tracking-[0.08em] uppercase mb-2">
         <Icon name="lucide:activity" class="size-[11px]" />
         Activity
@@ -225,7 +225,7 @@ const ghData = JSON.stringify({ contributions: ghContributions, total: ghTotal }
     {latestPost && (
       <a
         href={`/blog/${latestPost.id}`}
-        class="[grid-column:1/3] [grid-row:4] bento-link rounded-[0.625rem] border bg-background p-2.5 flex flex-col gap-1.5 group"
+        class="[grid-column:1/3] [grid-row:4] bento-link rounded-[0.625rem] border bg-background p-2.5 lg:p-5 flex flex-col gap-1.5 group"
       >
         <p class="text-muted-foreground flex items-center gap-1.5 text-[0.6875rem] font-medium tracking-[0.08em] uppercase">
           <Icon name="lucide:file-text" class="size-[11px]" />
@@ -336,17 +336,10 @@ const ghData = JSON.stringify({ contributions: ghContributions, total: ghTotal }
   .bento-link {
     transition: box-shadow 0.2s ease;
   }
-  /* Latte green: #40a02b */
   .bento-link:hover {
     box-shadow:
-      0 0 0 1px #40a02b88,
-      0 0 14px 2px #40a02b22;
-  }
-  /* Mocha green: #a6e3a1 */
-  [data-theme='dark'] .bento-link:hover {
-    box-shadow:
-      0 0 0 1px #a6e3a1aa,
-      0 0 18px 4px #a6e3a130;
+      0 0 0 1px color-mix(in srgb, var(--accent) 70%, transparent),
+      0 0 14px 2px color-mix(in srgb, var(--accent) 20%, transparent);
   }
 </style>
 

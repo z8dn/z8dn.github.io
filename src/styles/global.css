@@ -55,6 +55,7 @@
   --destructive:        #d20f39;
   --border:             #bcc0cc;
   --ring:               #1e66f5;
+  --accent:             #10b981;
 }
 
 /* ── Catppuccin Mocha (dark) ─────────────────────────────────────────────── */
@@ -68,6 +69,7 @@
   --destructive:        #f38ba8;
   --border:             #45475a;
   --ring:               #89b4fa;
+  --accent:             #10b981;
 }
 
 @layer base {
