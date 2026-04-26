@@ -87,7 +87,7 @@ const ghData = JSON.stringify({ contributions: ghContributions, total: ghTotal }
         also known as <span class="text-foreground font-medium">z8dn</span>
       </p>
       <p class="text-muted-foreground text-[0.775rem] leading-[1.6] mt-2" style="text-wrap:pretty">
-        Building mobile apps and developer tools. Sharing my journey along the way.
+        I build mobile apps and developer tools that make people's lives a little better. Somewhere between shipping features and obsessing over build times, I started writing — not to teach, but to think out loud and share the journey with anyone who'll come along for the ride.
       </p>
     </div>
 
@@ -106,24 +106,7 @@ const ghData = JSON.stringify({ contributions: ghContributions, total: ghTotal }
           </span>
         </div>
         <p class="text-muted-foreground text-[0.75rem]">Vietnam · UTC+7</p>
-      </div>
-      <div>
-        <p class="text-muted-foreground flex items-center gap-1.5 text-[0.6875rem] font-medium tracking-[0.08em] uppercase mb-2">
-          <Icon name="lucide:zap" class="size-[11px]" />
-          Now
-        </p>
-        <p class="text-muted-foreground text-[0.8125rem] leading-[1.6]" style="text-wrap:pretty">
-          Improving CI/CD and DX at ANZ Plus. Writing about Gradle internals.
-        </p>
-      </div>
-      <div>
-        <p class="text-muted-foreground flex items-center gap-1.5 text-[0.6875rem] font-medium tracking-[0.08em] uppercase mb-2">
-          <Icon name="lucide:activity" class="size-[11px]" />
-          Off hours
-        </p>
-        <p class="text-muted-foreground text-[0.8125rem] leading-[1.6]">
-          Badminton
-        </p>
+        <p id="hcm-clock" class="text-[1.6rem] font-semibold tracking-tight tabular-nums mt-2">--:-- --</p>
       </div>
     </div>
 
@@ -368,6 +351,22 @@ const ghData = JSON.stringify({ contributions: ghContributions, total: ghTotal }
 </style>
 
 <script>
+  // ── HCM local clock ──────────────────────────────────────────────────────
+  (function startClock() {
+    const el = document.getElementById('hcm-clock');
+    if (!el) return;
+    const tick = () => {
+      const now = new Date();
+      const hcm = new Date(now.getTime() + (7 * 60 - now.getTimezoneOffset()) * 60000);
+      const h = hcm.getUTCHours();
+      const m = String(hcm.getUTCMinutes()).padStart(2, '0');
+      const ampm = h >= 12 ? 'PM' : 'AM';
+      el.textContent = `${h % 12 || 12}:${m} ${ampm}`;
+    };
+    tick();
+    setInterval(tick, 1000);
+  })();
+
   // ── Online dot (9AM–9PM UTC+7) ───────────────────────────────────────────
   (function checkOnline() {
     const dot = document.getElementById('online-dot');
