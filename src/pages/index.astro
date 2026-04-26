@@ -423,6 +423,11 @@ const ghData = JSON.stringify({ contributions: ghContributions, total: ghTotal }
       weeks.push(week);
     }
 
+    // Drop trailing week if today is Sunday (only 1 visible square)
+    if (weeks.length && weeks[weeks.length - 1].filter(d => d !== null).length <= 1) {
+      weeks.pop();
+    }
+
     const container = document.getElementById('gh-graph-container');
     if (!container) return;
 
