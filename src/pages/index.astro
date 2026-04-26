@@ -19,7 +19,7 @@ let featuredProject: FeaturedProject = {
   stars: 4,
   language: 'Kotlin',
   url: 'https://github.com/z8dn/advanced-android-project-view',
-  homepage: 'https://plugins.jetbrains.com/plugin/26764',
+  homepage: 'https://plugins.jetbrains.com/plugin/29829-advanced-android-project-tree',
 }
 try {
   const r = await fetch('https://api.github.com/repos/z8dn/advanced-android-project-view',
@@ -81,18 +81,75 @@ const ghData = JSON.stringify({ contributions: ghContributions, total: ghTotal }
   <section class="grid grid-cols-3 gap-1.5 lg:gap-2.5 max-sm:block max-sm:space-y-2">
 
     <!-- Intro — col1-2 row1 -->
-    <div class="[grid-column:1/3] [grid-row:1] flex flex-col justify-center rounded-[0.625rem] border bg-background p-2.5 lg:p-5">
-      <h1 class="text-[1.75rem] font-semibold tracking-[-0.04em] leading-tight">Hey, I'm Zayden 👋</h1>
-      <p class="text-muted-foreground mt-0.5 text-[0.8125rem]">
-        also known as <span class="text-foreground font-medium">z8dn</span>
-      </p>
-      <p class="text-muted-foreground text-[0.775rem] leading-[1.6] mt-2" style="text-wrap:pretty">
-        I build mobile apps and developer tools that make people's lives a little better. Somewhere between shipping features and obsessing over build times, I started writing — not to teach, but to think out loud and share the journey with anyone who'll come along for the ride.
-      </p>
+    <div class="[grid-column:1/3] [grid-row:1] flex flex-row items-center gap-4 rounded-[0.625rem] border bg-background p-2.5 lg:p-5">
+      <div class="flex flex-col justify-center flex-1 min-w-0">
+        <h1 class="text-[1.75rem] font-semibold tracking-[-0.04em] leading-tight">Hey, I'm Zayden 👋</h1>
+        <p class="text-muted-foreground mt-0.5 text-[0.8125rem]">
+          also known as <span class="text-foreground font-medium">z8dn</span>
+        </p>
+        <p class="text-muted-foreground text-[0.775rem] leading-[1.6] mt-2" style="text-wrap:pretty">
+          I build mobile apps and developer tools that make people's lives a little better. Somewhere between shipping features and obsessing over build times, I started writing — not to teach, but to think out loud and share the journey with anyone who'll come along for the ride.
+        </p>
+      </div>
+
+      <!-- Pixel-art mascot -->
+      <svg
+        id="pixel-char"
+        viewBox="0 0 10 12"
+        class="w-16 lg:w-[5.5rem] shrink-0 self-center"
+        style="image-rendering:pixelated;shape-rendering:crispEdges"
+        aria-hidden="true"
+      >
+        <!-- Hair -->
+        <rect x="1" y="0" width="8" height="1" fill="#2c2443"/>
+        <rect x="1" y="1" width="1" height="3" fill="#2c2443"/>
+        <rect x="8" y="1" width="1" height="3" fill="#2c2443"/>
+        <rect x="1" y="4" width="8" height="1" fill="#2c2443"/>
+        <!-- Face -->
+        <rect x="2" y="1" width="6" height="3" fill="#fcd5ae"/>
+        <!-- Eyes -->
+        <rect x="3" y="2" width="1" height="1" fill="#2c2443"/>
+        <rect x="6" y="2" width="1" height="1" fill="#2c2443"/>
+        <!-- Mouth -->
+        <rect x="4" y="3" width="2" height="1" fill="#d9705e"/>
+        <!-- Shoulders -->
+        <rect x="1" y="5" width="8" height="1" fill="#40a02b"/>
+        <!-- Left arm (static) -->
+        <rect x="0" y="6" width="2" height="2" fill="#40a02b"/>
+        <!-- Body / torso -->
+        <rect x="3" y="6" width="4" height="3" fill="#40a02b"/>
+        <!-- Pants -->
+        <rect x="3" y="9" width="4" height="2" fill="#2d4080"/>
+        <!-- Left shoe -->
+        <rect x="2" y="11" width="3" height="1" fill="#1a1a2e"/>
+        <!-- Right shoe -->
+        <rect x="5" y="11" width="3" height="1" fill="#1a1a2e"/>
+        <!-- Right arm (wave-animated on hover) — pivot anchored at shoulder (8,6) -->
+        <g transform="translate(8,6)">
+          <g class="pixel-wave-arm">
+            <rect x="0" y="0" width="2" height="2" fill="#40a02b"/>
+          </g>
+        </g>
+      </svg>
     </div>
 
     <!-- Location / Now — col1 row2 -->
-    <div class="[grid-column:1] [grid-row:2] flex flex-col gap-y-2 rounded-[0.625rem] border bg-background p-2.5 lg:p-5">
+    <div class="[grid-column:1] [grid-row:2] flex flex-col gap-y-2 rounded-[0.625rem] border bg-background p-2.5 lg:p-5 relative overflow-hidden">
+      <!-- Vietnam country silhouette — subtle background -->
+      <svg
+        viewBox="0 0 40 132"
+        fill="currentColor"
+        aria-hidden="true"
+        class="absolute -right-1 top-1/2 -translate-y-1/2 h-[115%] opacity-[0.06] text-foreground pointer-events-none select-none"
+      >
+        <polygon points="
+          3,14 13,5 26,3 37,9 40,20 36,32
+          29,43 25,53 23,62 27,72 34,84
+          32,95 26,106 20,116 15,120
+          10,114 5,102 7,90 12,80 15,70
+          17,62 13,52 8,41 5,29 4,20
+        "/>
+      </svg>
       <div>
         <p class="text-muted-foreground flex items-center gap-1.5 text-[0.6875rem] font-medium tracking-[0.08em] uppercase mb-2">
           <Icon name="lucide:map-pin" class="size-[11px]" />
@@ -123,7 +180,7 @@ const ghData = JSON.stringify({ contributions: ghContributions, total: ghTotal }
       </p>
       <div class="flex flex-col gap-1 grow">
         <p class="text-[0.85rem] font-semibold leading-snug tracking-[-0.02em] group-hover:text-foreground transition-colors">
-          Advanced Android<br />Project View
+          Advanced Android<br />Project Tree
         </p>
         <p class="text-muted-foreground text-[0.75rem] leading-[1.55]" style="text-wrap:pretty">
           {featuredProject.description}
@@ -330,6 +387,19 @@ const ghData = JSON.stringify({ contributions: ghContributions, total: ghTotal }
   .skill-hours {
     font-size: 11px; font-family: 'Geist Mono', ui-monospace, monospace;
     color: var(--muted-foreground); width: 36px; text-align: right; flex-shrink: 0;
+  }
+
+  /* Pixel-art character wave animation */
+  .pixel-wave-arm {
+    transform-origin: 0px 0px;
+  }
+  #pixel-char:hover .pixel-wave-arm {
+    animation: pixel-wave 0.9s ease-in-out infinite;
+  }
+  @keyframes pixel-wave {
+    0%, 100% { transform: rotate(0deg); }
+    35%       { transform: rotate(-145deg); }
+    65%       { transform: rotate(-115deg); }
   }
 
   /* Clickable bento glow */

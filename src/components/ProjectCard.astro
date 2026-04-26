@@ -11,6 +11,20 @@ interface Props {
 }
 
 const { project } = Astro.props
+
+const TAG_ICONS: Record<string, string> = {
+  'open-source':    'lucide:git-branch',
+  'contract':       'lucide:file-text',
+  'Kotlin':         'simple-icons:kotlin',
+  'Android':        'simple-icons:android',
+  'Android Studio': 'simple-icons:androidstudio',
+  'IntelliJ Plugin':'simple-icons:jetbrains',
+  'TypeScript':     'simple-icons:typescript',
+  'React':          'simple-icons:react',
+  'Swift':          'simple-icons:swift',
+  'Python':         'simple-icons:python',
+  'Astro':          'simple-icons:astro',
+}
 ---
 
 <div
@@ -23,13 +37,13 @@ const { project } = Astro.props
   >
     {
       project.data.image && (
-        <div class="w-full sm:max-w-3xs sm:shrink-0">
+        <div class="w-full h-36 sm:h-auto sm:w-32 sm:shrink-0 sm:self-stretch overflow-hidden rounded-md">
           <Image
             src={project.data.image}
             alt={project.data.name}
             width={1200}
             height={630}
-            class="object-cover"
+            class="h-full w-full object-cover object-center"
           />
         </div>
       )
@@ -41,26 +55,34 @@ const { project } = Astro.props
       <p class="text-muted-foreground mb-2 text-sm">
         {project.data.description}
       </p>
-      {
-        project.data.startDate && (
-          <p class="text-muted-foreground/70 mb-2 flex items-center gap-x-1.5 text-xs">
-            <span class="flex items-center gap-x-1.5">
-              <Icon name="lucide:calendar" class="size-3" />
-              <span>
-                {formatDate(project.data.startDate)}
-                {project.data.endDate
-                  ? ` → ${formatDate(project.data.endDate)}`
-                  : ' → Present'}
-              </span>
+      <p class="text-muted-foreground/70 mb-2 flex items-center gap-x-1.5 text-xs">
+        {project.data.startDate && (
+          <span class="flex items-center gap-x-1.5">
+            <Icon name="lucide:calendar" class="size-3" />
+            <span>
+              {formatDate(project.data.startDate)}
+              {project.data.endDate
+                ? ` → ${formatDate(project.data.endDate)}`
+                : ' → Present'}
             </span>
-          </p>
-        )
-      }
+          </span>
+        )}
+        {project.data.startDate && (
+          <span class="text-muted-foreground/30">|</span>
+        )}
+        <span class="flex items-center gap-x-1">
+          <Icon name="lucide:external-link" class="size-3" />
+          <span>{new URL(project.data.link).hostname}</span>
+        </span>
+      </p>
       {
         project.data.tags && (
           <div class="flex flex-wrap gap-2">
             {project.data.tags.map((tag: string) => (
-              <Badge variant="muted">{tag}</Badge>
+              <Badge variant="muted" class="flex items-center gap-1">
+                {TAG_ICONS[tag] && <Icon name={TAG_ICONS[tag]} class="size-3 shrink-0" />}
+                {tag}
+              </Badge>
             ))}
           </div>
         )
