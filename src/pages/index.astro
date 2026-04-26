@@ -344,8 +344,10 @@ const ghData = JSON.stringify({ contributions: ghContributions, total: ghTotal }
 </style>
 
 <script>
-  // ── HCM local clock ──────────────────────────────────────────────────────
-  (function startClock() {
+  // Module-level clock interval handle so we can clear it before each swap
+  let _clockInterval: ReturnType<typeof setInterval> | null = null;
+
+  function startClock() {
     const el = document.getElementById('hcm-clock');
     if (!el) return;
     const tick = () => {
@@ -357,11 +359,10 @@ const ghData = JSON.stringify({ contributions: ghContributions, total: ghTotal }
       el.textContent = `${h % 12 || 12}:${m} ${ampm}`;
     };
     tick();
-    setInterval(tick, 1000);
-  })();
+    _clockInterval = setInterval(tick, 1000);
+  }
 
-  // ── Online dot (9AM–9PM UTC+7) ───────────────────────────────────────────
-  (function checkOnline() {
+  function checkOnline() {
     const dot = document.getElementById('online-dot');
     if (!dot) return;
     const utc7Hour = (new Date().getUTCHours() + 7) % 24;
@@ -371,19 +372,21 @@ const ghData = JSON.stringify({ contributions: ghContributions, total: ghTotal }
       circle?.classList.replace('bg-muted-foreground/40', 'bg-emerald-500');
       if (label) label.textContent = 'Online';
     }
-  })();
+  }
 
-  // ── GitHub contribution graph ─────────────────────────────────────────────
-  (function buildGhGraph() {
+  function buildGhGraph() {
+    const container = document.getElementById('gh-graph-container');
+    if (!container) return;
+    // Already rendered — skip (e.g. hot-reload without a full swap)
+    if (container.hasChildNodes()) return;
+
     const raw = document.getElementById('gh-data');
     if (!raw) return;
 
     let contributions: { date: string; count: number }[] = [];
-    let total = 0;
     try {
       const parsed = JSON.parse(raw.textContent ?? '{}');
       contributions = parsed.contributions ?? [];
-      total = parsed.total ?? 0;
     } catch { return; }
 
     const dateMap = new Map(contributions.map(c => [c.date, c.count]));
@@ -394,7 +397,7 @@ const ghData = JSON.stringify({ contributions: ghContributions, total: ghTotal }
     const [t1, t2, t3] = [p(0.25), p(0.5), p(0.75)];
     const getLevel = (n: number) => !n ? 0 : n <= t1 ? 1 : n <= t2 ? 2 : n <= t3 ? 3 : 4;
 
-    // Sunday-aligned weeks — ~5 months (20 weeks back)
+    // Sunday-aligned weeks — ~11 weeks back
     const today = new Date(); today.setHours(0, 0, 0, 0);
     const cursor = new Date(today);
     cursor.setDate(cursor.getDate() - today.getDay());
@@ -420,9 +423,6 @@ const ghData = JSON.stringify({ contributions: ghContributions, total: ghTotal }
       weeks.pop();
     }
 
-    const container = document.getElementById('gh-graph-container');
-    if (!container) return;
-
     const weeksRow = document.createElement('div'); weeksRow.className = 'gh-weeks';
     weeks.forEach(week => {
       const weekEl = document.createElement('div'); weekEl.className = 'gh-week';
@@ -439,6 +439,20 @@ const ghData = JSON.stringify({ contributions: ghContributions, total: ghTotal }
       weeksRow.appendChild(weekEl);
     });
     container.appendChild(weeksRow);
-  })();
+  }
 
+  // Clear clock before Astro swaps the DOM (avoids stale element references)
+  document.addEventListener('astro:before-swap', () => {
+    if (_clockInterval !== null) {
+      clearInterval(_clockInterval);
+      _clockInterval = null;
+    }
+  });
+
+  // Re-run on every navigation (initial load + client-side transitions)
+  document.addEventListener('astro:page-load', () => {
+    startClock();
+    checkOnline();
+    buildGhGraph();
+  });
 </script>
