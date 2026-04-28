@@ -135,29 +135,34 @@ const ghData = JSON.stringify({ contributions: ghContributions, total: ghTotal }
 
     <!-- Location / Now — col1 row2 -->
     <div class="[grid-column:1] [grid-row:2] flex flex-col gap-y-2 rounded-[0.625rem] border bg-background p-2.5 lg:p-5 relative overflow-hidden">
-      <!-- Vietnam country silhouette — subtle background -->
+      <!-- Vietnam silhouette — subtle background -->
       <svg
-        viewBox="0 0 40 132"
-        fill="currentColor"
+        viewBox="0 0 50 105"
         aria-hidden="true"
-        class="absolute -right-1 top-1/2 -translate-y-1/2 h-[115%] opacity-[0.06] text-foreground pointer-events-none select-none"
+        class="absolute -right-1 top-1/2 -translate-y-[38%] h-[115%] opacity-[0.07] text-foreground pointer-events-none select-none z-0"
+        fill="currentColor"
       >
         <polygon points="
-          3,14 13,5 26,3 37,9 40,20 36,32
-          29,43 25,53 23,62 27,72 34,84
-          32,95 26,106 20,116 15,120
-          10,114 5,102 7,90 12,80 15,70
-          17,62 13,52 8,41 5,29 4,20
+          22,1  33,10  40,13
+          34,19  26,26  25,32
+          34,43  41,49
+          48,65  48,75
+          33,87  27,90  18,99
+          17,96  13,89
+          17,83  20,73  23,65
+          33,57  30,43  24,38
+          13,30  13,23  7,13
+          1,7  13,7  20,3
         "/>
       </svg>
-      <div>
+      <div class="relative z-10">
         <p class="text-muted-foreground flex items-center gap-1.5 text-[0.6875rem] font-medium tracking-[0.08em] uppercase mb-2">
           <Icon name="lucide:map-pin" class="size-[11px]" />
           Location
         </p>
         <div class="flex items-center gap-2">
           <p class="text-[0.875rem] font-medium">Ho Chi Minh City</p>
-          <span id="online-dot" class="inline-flex items-center gap-1 rounded-full border px-1.5 py-0.5 text-[0.6rem] font-medium tracking-wide uppercase">
+          <span id="online-dot" class="inline-flex items-center gap-1 rounded-full border bg-background px-1.5 py-0.5 text-[0.6rem] font-medium tracking-wide uppercase">
             <span class="size-1.5 rounded-full bg-muted-foreground/40" id="online-dot-circle"></span>
             <span id="online-dot-label" class="text-muted-foreground">Offline</span>
           </span>
@@ -422,9 +427,8 @@ const ghData = JSON.stringify({ contributions: ghContributions, total: ghTotal }
     if (!el) return;
     const tick = () => {
       const now = new Date();
-      const hcm = new Date(now.getTime() + (7 * 60 - now.getTimezoneOffset()) * 60000);
-      const h = hcm.getUTCHours();
-      const m = String(hcm.getUTCMinutes()).padStart(2, '0');
+      const h = (now.getUTCHours() + 7) % 24;
+      const m = String(now.getUTCMinutes()).padStart(2, '0');
       const ampm = h >= 12 ? 'PM' : 'AM';
       el.textContent = `${h % 12 || 12}:${m} ${ampm}`;
     };
