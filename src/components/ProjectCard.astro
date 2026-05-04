@@ -79,7 +79,7 @@ const TAG_ICONS: Record<string, string> = {
         project.data.tags && (
           <div class="flex flex-wrap gap-2">
             {project.data.tags.map((tag: string) => (
-              <Badge variant="muted" class="flex items-center gap-1">
+              <Badge variant="muted" className="flex items-center gap-1">
                 {TAG_ICONS[tag] && <Icon name={TAG_ICONS[tag]} class="size-3 shrink-0" />}
                 {tag}
               </Badge>
