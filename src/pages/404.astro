@@ -12,17 +12,20 @@ import Layout from '@/layouts/Layout.astro'
   <section
     class="flex flex-col items-center justify-center gap-y-8 py-16 text-center"
   >
-    <h1 class="font-pixel text-destructive text-2xl">GAME OVER</h1>
+    <h1 class="font-pixel text-destructive text-2xl">
+      GAME OVER<span class="sr-only"> — page not found</span>
+    </h1>
     <p class="font-pixel text-muted-foreground text-[0.625rem] leading-relaxed">
-      ERROR 404 ▸ THIS AREA DOES NOT EXIST
+      ERROR 404 <span aria-hidden="true">▸</span> THIS AREA DOES NOT EXIST
     </p>
     <div class="flex flex-col items-center gap-y-3">
       <p class="font-pixel text-[0.625rem]">CONTINUE?</p>
       <Link
         href="/"
+        aria-label="Return to home page"
         class="pixel-card pixel-card-link font-pixel inline-flex items-center gap-x-2 px-5 py-3 text-[0.625rem]"
       >
-        <span class="pixel-blink text-(--accent)">▸</span> YES
+        <span class="pixel-blink text-(--accent)" aria-hidden="true">▸</span> YES
       </Link>
     </div>
   </section>
