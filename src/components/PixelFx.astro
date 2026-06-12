@@ -8,6 +8,7 @@
     if (document.documentElement.getAttribute('data-sfx') !== 'true') return
     try {
       ctx ??= new AudioContext()
+      if (ctx.state === 'suspended') ctx.resume()
       const osc = ctx.createOscillator()
       const gain = ctx.createGain()
       osc.type = 'square'
@@ -46,7 +47,8 @@
   let pos = 0
 
   document.addEventListener('keydown', (e) => {
-    pos = e.key === KONAMI[pos] ? pos + 1 : e.key === KONAMI[0] ? 1 : 0
+    const key = e.key.length === 1 ? e.key.toLowerCase() : e.key
+    pos = key === KONAMI[pos] ? pos + 1 : key === KONAMI[0] ? 1 : 0
     if (pos === KONAMI.length) {
       pos = 0
       invade()
