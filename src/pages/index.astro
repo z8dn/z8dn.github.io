@@ -92,42 +92,49 @@ const ghData = JSON.stringify({ contributions: ghContributions, total: ghTotal }
         </p>
       </div>
 
-      <!-- Pixel-art mascot -->
+      <!-- Pixel-art mascot (modeled on the real avatar: swept black hair, black tee) -->
       <svg
         id="pixel-char"
-        viewBox="0 0 10 12"
+        viewBox="0 0 12 16"
         class="w-16 lg:w-[5.5rem] shrink-0 self-center"
         style="image-rendering:pixelated;shape-rendering:crispEdges"
         aria-hidden="true"
       >
-        <!-- Hair -->
-        <rect x="1" y="0" width="8" height="1" fill="#2c2443"/>
-        <rect x="1" y="1" width="1" height="3" fill="#2c2443"/>
-        <rect x="8" y="1" width="1" height="3" fill="#2c2443"/>
-        <rect x="1" y="4" width="8" height="1" fill="#2c2443"/>
         <!-- Face -->
-        <rect x="2" y="1" width="6" height="3" fill="#fcd5ae"/>
+        <rect x="3" y="3" width="6" height="5" fill="#f0c39c"/>
+        <!-- Ears -->
+        <rect x="2" y="5" width="1" height="1" fill="#f0c39c"/>
+        <rect x="9" y="5" width="1" height="1" fill="#f0c39c"/>
+        <!-- Hair — volume on top, swept fringe, short sides -->
+        <rect x="4" y="0" width="5" height="1" fill="#15151e"/>
+        <rect x="3" y="1" width="7" height="1" fill="#15151e"/>
+        <rect x="2" y="2" width="8" height="1" fill="#15151e"/>
+        <rect x="2" y="3" width="1" height="2" fill="#15151e"/>
+        <rect x="9" y="3" width="1" height="2" fill="#15151e"/>
+        <rect x="3" y="3" width="4" height="1" fill="#15151e"/>
         <!-- Eyes -->
-        <rect x="3" y="2" width="1" height="1" fill="#2c2443"/>
-        <rect x="6" y="2" width="1" height="1" fill="#2c2443"/>
-        <!-- Mouth -->
-        <rect x="4" y="3" width="2" height="1" fill="#d9705e"/>
-        <!-- Shoulders -->
-        <rect x="1" y="5" width="8" height="1" fill="#40a02b"/>
-        <!-- Left arm (static) -->
-        <rect x="0" y="6" width="2" height="2" fill="#40a02b"/>
-        <!-- Body / torso -->
-        <rect x="3" y="6" width="4" height="3" fill="#40a02b"/>
-        <!-- Pants -->
-        <rect x="3" y="9" width="4" height="2" fill="#2d4080"/>
-        <!-- Left shoe -->
-        <rect x="2" y="11" width="3" height="1" fill="#1a1a2e"/>
-        <!-- Right shoe -->
-        <rect x="5" y="11" width="3" height="1" fill="#1a1a2e"/>
-        <!-- Right arm (wave-animated on hover) — pivot anchored at shoulder (8,6) -->
-        <g transform="translate(8,6)">
+        <rect x="4" y="5" width="1" height="1" fill="#1d1d28"/>
+        <rect x="7" y="5" width="1" height="1" fill="#1d1d28"/>
+        <!-- Slight smile -->
+        <rect x="5" y="7" width="2" height="1" fill="#c98a6b"/>
+        <!-- Neck -->
+        <rect x="5" y="8" width="2" height="1" fill="#e3b48d"/>
+        <!-- Black tee -->
+        <rect x="2" y="9" width="8" height="1" fill="#2e2e38"/>
+        <rect x="3" y="10" width="6" height="3" fill="#2e2e38"/>
+        <!-- Left arm + hand (static) -->
+        <rect x="1" y="10" width="2" height="2" fill="#2e2e38"/>
+        <rect x="1" y="12" width="1" height="1" fill="#f0c39c"/>
+        <!-- Jeans -->
+        <rect x="3" y="13" width="6" height="2" fill="#2d4080"/>
+        <!-- Shoes -->
+        <rect x="2" y="15" width="3" height="1" fill="#16161d"/>
+        <rect x="7" y="15" width="3" height="1" fill="#16161d"/>
+        <!-- Right arm + hand (wave-animated on hover) — pivot anchored at shoulder (9,10) -->
+        <g transform="translate(9,10)">
           <g class="pixel-wave-arm">
-            <rect x="0" y="0" width="2" height="2" fill="#40a02b"/>
+            <rect x="0" y="0" width="2" height="2" fill="#2e2e38"/>
+            <rect x="1" y="2" width="1" height="1" fill="#f0c39c"/>
           </g>
         </g>
       </svg>
