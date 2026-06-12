@@ -23,6 +23,8 @@
     "@expressive-code/plugin-line-numbers": "^0.40.2",
     "@fontsource-variable/jetbrains-mono": "^5.2.8",
     "@fontsource-variable/outfit": "^5.2.8",
+    "@fontsource/pixelify-sans": "^5.2.7",
+    "@fontsource/press-start-2p": "^5.2.7",
     "@iconify-json/lucide": "^1.2.26",
     "@iconify-json/simple-icons": "^1.2.79",
     "@tailwindcss/vite": "^4.0.7",
@@ -48,6 +50,7 @@
     "typescript": "^5.8.3"
   },
   "devDependencies": {
+    "@flydotio/dockerfile": "^0.7.10",
     "prettier": "^3.5.1",
     "prettier-plugin-astro": "^0.14.1",
     "prettier-plugin-astro-organize-imports": "^0.4.11",
