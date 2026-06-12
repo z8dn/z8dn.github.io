@@ -1,0 +1,48 @@
+---
+import { Button } from '@/components/ui/button'
+import { Icon } from 'astro-icon/components'
+---
+
+<Button
+  id="sfx-toggle"
+  variant="ghost"
+  size="icon"
+  title="Toggle sound effects"
+  className="-my-2 size-8"
+>
+  <Icon name="lucide:volume-2" class="size-4 hidden [html[data-sfx='true']_&]:block" />
+  <Icon name="lucide:volume-x" class="size-4 block [html[data-sfx='true']_&]:hidden" />
+  <span class="sr-only">Toggle sound effects</span>
+</Button>
+
+<script is:inline data-astro-rerun>
+  ;(() => {
+    const sfx = localStorage?.getItem('sfx') === 'true'
+    document.documentElement.setAttribute('data-sfx', String(sfx))
+  })()
+</script>
+
+<script>
+  function handleSfxClick() {
+    const el = document.documentElement
+    const next = el.getAttribute('data-sfx') !== 'true'
+    el.setAttribute('data-sfx', String(next))
+    localStorage.setItem('sfx', String(next))
+  }
+
+  function initSfxToggle() {
+    document
+      .getElementById('sfx-toggle')
+      ?.addEventListener('click', handleSfxClick)
+  }
+
+  initSfxToggle()
+
+  document.addEventListener('astro:after-swap', () => {
+    document.documentElement.setAttribute(
+      'data-sfx',
+      localStorage.getItem('sfx') ?? 'false',
+    )
+    initSfxToggle()
+  })
+</script>
