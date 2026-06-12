@@ -2,9 +2,7 @@
 import Breadcrumbs from '@/components/Breadcrumbs.astro'
 import Link from '@/components/Link.astro'
 import PageHead from '@/components/PageHead.astro'
-import { buttonVariants } from '@/components/ui/button'
 import Layout from '@/layouts/Layout.astro'
-import { cn } from '@/lib/utils'
 ---
 
 <Layout class="max-w-3xl">
@@ -12,18 +10,20 @@ import { cn } from '@/lib/utils'
   <Breadcrumbs items={[{ label: '???', icon: 'lucide:circle-help' }]} />
 
   <section
-    class="flex flex-col items-center justify-center gap-y-4 text-center"
+    class="flex flex-col items-center justify-center gap-y-8 py-16 text-center"
   >
-    <div class="max-w-md">
-      <h1 class="mb-4 text-3xl font-medium">404: Page not found</h1>
-      <p class="prose">Oops! The page you're looking for doesn't exist.</p>
+    <h1 class="font-pixel text-destructive text-2xl">GAME OVER</h1>
+    <p class="font-pixel text-muted-foreground text-[0.625rem] leading-relaxed">
+      ERROR 404 ▸ THIS AREA DOES NOT EXIST
+    </p>
+    <div class="flex flex-col items-center gap-y-3">
+      <p class="font-pixel text-[0.625rem]">CONTINUE?</p>
+      <Link
+        href="/"
+        class="pixel-card pixel-card-link font-pixel inline-flex items-center gap-x-2 px-5 py-3 text-[0.625rem]"
+      >
+        <span class="pixel-blink text-(--accent)">▸</span> YES
+      </Link>
     </div>
-    <Link
-      href="/"
-      class={cn(buttonVariants({ variant: 'outline' }), 'flex gap-x-1.5 group')}
-    >
-      <span class="transition-transform group-hover:-translate-x-1">&larr;</span
-      > Go to home page
-    </Link>
   </section>
 </Layout>
