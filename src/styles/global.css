@@ -50,7 +50,7 @@
   --destructive:        #d20f39;
   --border:             #9ca0b0;
   --ring:               #1e66f5;
-  --accent:             #40a02b;
+  --accent:             #2d7a1f;
   --crust:              #bcc0cc;
 }
 
@@ -70,12 +70,15 @@
 }
 
 @layer base {
+  /* tracking-tight removed deliberately: pixel fonts need default letter-spacing */
   *,
   ::after,
   ::before,
   ::backdrop,
   ::file-selector-button {
     @apply border-border outline-ring/50;
+    /* Pixel aesthetic: square corners everywhere. !important on purpose —
+       rounded-* utilities will NOT work anywhere in this project. */
     border-radius: 0 !important;
   }
 
