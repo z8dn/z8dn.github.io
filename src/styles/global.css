@@ -176,4 +176,7 @@ html[data-crt='true'] body::before {
   .pixel-blink {
     animation: none;
   }
+  .pixel-card-link {
+    transition: none;
+  }
 }
