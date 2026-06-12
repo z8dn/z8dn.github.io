@@ -59,7 +59,7 @@
     }
 
     :where(h4):not(:where(.not-prose, .not-prose *)) {
-      @apply mt-7 mb-3 text-xs;
+      @apply mt-7 mb-3 text-sm;
     }
 
     :where(h5, h6):not(:where(.not-prose, .not-prose *)) {

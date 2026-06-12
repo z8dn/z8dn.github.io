@@ -28,12 +28,18 @@ import { Icon } from 'astro-icon/components'
     const next = el.getAttribute('data-sfx') !== 'true'
     el.setAttribute('data-sfx', String(next))
     localStorage.setItem('sfx', String(next))
+    document
+      .getElementById('sfx-toggle')
+      ?.setAttribute('aria-pressed', String(next))
   }
 
   function initSfxToggle() {
-    document
-      .getElementById('sfx-toggle')
-      ?.addEventListener('click', handleSfxClick)
+    const button = document.getElementById('sfx-toggle')
+    button?.setAttribute(
+      'aria-pressed',
+      String(document.documentElement.getAttribute('data-sfx') === 'true'),
+    )
+    button?.addEventListener('click', handleSfxClick)
   }
 
   initSfxToggle()

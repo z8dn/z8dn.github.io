@@ -45,12 +45,18 @@ import { Icon } from 'astro-icon/components'
     })
 
     localStorage.setItem('theme', newTheme)
+    document
+      .getElementById('theme-toggle')
+      ?.setAttribute('aria-pressed', String(newTheme === 'dark'))
   }
 
   function initThemeToggle() {
-    document
-      .getElementById('theme-toggle')
-      ?.addEventListener('click', handleToggleClick)
+    const button = document.getElementById('theme-toggle')
+    button?.setAttribute(
+      'aria-pressed',
+      String(document.documentElement.getAttribute('data-theme') === 'dark'),
+    )
+    button?.addEventListener('click', handleToggleClick)
   }
 
   initThemeToggle()
