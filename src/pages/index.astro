@@ -81,9 +81,9 @@ const ghData = JSON.stringify({ contributions: ghContributions, total: ghTotal }
   <section class="grid grid-cols-3 gap-1.5 lg:gap-2.5 max-sm:block max-sm:space-y-2">
 
     <!-- Intro — col1-2 row1 -->
-    <div class="[grid-column:1/3] [grid-row:1] flex flex-row items-center gap-4 rounded-[0.625rem] border bg-background p-2.5 lg:p-5">
+    <div class="[grid-column:1/3] [grid-row:1] flex flex-row items-center gap-4 pixel-card p-2.5 lg:p-5">
       <div class="flex flex-col justify-center flex-1 min-w-0">
-        <h1 class="text-[1.75rem] font-semibold tracking-[-0.04em] leading-tight">Hey, I'm Zayden 👋</h1>
+        <h1 class="font-pixel text-[0.95rem] lg:text-[1.1rem] leading-relaxed min-h-[1.6em]"><span id="typewriter" class="blink-cursor">Hey, I'm Zayden</span></h1>
         <p class="text-muted-foreground mt-0.5 text-[0.8125rem]">
           also known as <span class="text-foreground font-medium">z8dn</span>
         </p>
@@ -134,7 +134,7 @@ const ghData = JSON.stringify({ contributions: ghContributions, total: ghTotal }
     </div>
 
     <!-- Location / Now — col1 row2 -->
-    <div class="[grid-column:1] [grid-row:2] flex flex-col gap-y-2 rounded-[0.625rem] border bg-background p-2.5 lg:p-5 relative overflow-hidden">
+    <div class="[grid-column:1] [grid-row:2] flex flex-col gap-y-2 pixel-card p-2.5 lg:p-5 relative overflow-hidden">
       <!-- Vietnam silhouette — subtle background -->
       <svg
         viewBox="0 0 50 105"
@@ -156,7 +156,7 @@ const ghData = JSON.stringify({ contributions: ghContributions, total: ghTotal }
         "/>
       </svg>
       <div class="relative z-10">
-        <p class="text-muted-foreground flex items-center gap-1.5 text-[0.6875rem] font-medium tracking-[0.08em] uppercase mb-2">
+        <p class="text-muted-foreground flex items-center gap-1.5 font-pixel text-[0.5rem] uppercase mb-2">
           <Icon name="lucide:map-pin" class="size-[11px]" />
           Location
         </p>
@@ -168,7 +168,7 @@ const ghData = JSON.stringify({ contributions: ghContributions, total: ghTotal }
           </span>
         </div>
         <p class="text-muted-foreground text-[0.75rem]">Vietnam · UTC+7</p>
-        <p id="hcm-clock" class="text-[1.6rem] font-semibold tracking-tight tabular-nums mt-2">--:-- --</p>
+        <p id="hcm-clock" class="lcd-clock mt-2">--:-- --</p>
       </div>
     </div>
 
@@ -177,9 +177,9 @@ const ghData = JSON.stringify({ contributions: ghContributions, total: ghTotal }
       href={featuredProject.url}
       target="_blank"
       rel="noopener noreferrer"
-      class="[grid-column:2] [grid-row:2] bento-link rounded-[0.625rem] border bg-background p-2.5 lg:p-5 flex flex-col gap-y-2 group "
+      class="[grid-column:2] [grid-row:2] pixel-card p-2.5 lg:p-5 flex flex-col gap-y-2 group "
     >
-      <p class="text-muted-foreground flex items-center gap-1.5 text-[0.6875rem] font-medium tracking-[0.08em] uppercase">
+      <p class="text-muted-foreground flex items-center gap-1.5 font-pixel text-[0.5rem] uppercase">
         <Icon name="lucide:box" class="size-[11px]" />
         Featured project
       </p>
@@ -208,8 +208,8 @@ const ghData = JSON.stringify({ contributions: ghContributions, total: ghTotal }
     </a>
 
     <!-- Career timeline — col3 rows1-2 -->
-    <div class="[grid-column:3] [grid-row:1/3] flex flex-col gap-y-2 rounded-[0.625rem] border bg-background p-2.5 lg:p-5">
-      <p class="text-muted-foreground flex items-center gap-1.5 text-[0.6875rem] font-medium tracking-[0.08em] uppercase">
+    <div class="[grid-column:3] [grid-row:1/3] flex flex-col gap-y-2 pixel-card p-2.5 lg:p-5">
+      <p class="text-muted-foreground flex items-center gap-1.5 font-pixel text-[0.5rem] uppercase">
         <Icon name="lucide:briefcase" class="size-[11px]" />
         Career
       </p>
@@ -245,8 +245,8 @@ const ghData = JSON.stringify({ contributions: ghContributions, total: ghTotal }
     </div>
 
     <!-- Skills / WakaTime — col3 rows3-4 -->
-    <div class="[grid-column:3] [grid-row:3/5] rounded-[0.625rem] border bg-background p-2.5 lg:p-5">
-      <p class="text-muted-foreground flex items-center gap-1.5 text-[0.6875rem] font-medium tracking-[0.08em] uppercase mb-2">
+    <div class="[grid-column:3] [grid-row:3/5] pixel-card p-2.5 lg:p-5">
+      <p class="text-muted-foreground flex items-center gap-1.5 font-pixel text-[0.5rem] uppercase mb-2">
         <Icon name="lucide:bar-chart-2" class="size-[11px]" />
         Time coding
       </p>
@@ -275,8 +275,8 @@ const ghData = JSON.stringify({ contributions: ghContributions, total: ghTotal }
     </div>
 
     <!-- Activity heatmap — col1 row3 -->
-    <div class="[grid-column:1] [grid-row:3] rounded-[0.625rem] border bg-background p-2.5 lg:p-5">
-      <p class="text-muted-foreground flex items-center gap-1.5 text-[0.6875rem] font-medium tracking-[0.08em] uppercase mb-2">
+    <div class="[grid-column:1] [grid-row:3] pixel-card p-2.5 lg:p-5">
+      <p class="text-muted-foreground flex items-center gap-1.5 font-pixel text-[0.5rem] uppercase mb-2">
         <Icon name="lucide:activity" class="size-[11px]" />
         Activity
       </p>
@@ -287,9 +287,9 @@ const ghData = JSON.stringify({ contributions: ghContributions, total: ghTotal }
     {latestPost && (
       <a
         href={`/blog/${latestPost.id}`}
-        class="[grid-column:1/3] [grid-row:4] bento-link rounded-[0.625rem] border bg-background p-2.5 lg:p-5 flex flex-col gap-1.5 group"
+        class="[grid-column:1/3] [grid-row:4] pixel-card p-2.5 lg:p-5 flex flex-col gap-1.5 group"
       >
-        <p class="text-muted-foreground flex items-center gap-1.5 text-[0.6875rem] font-medium tracking-[0.08em] uppercase">
+        <p class="text-muted-foreground flex items-center gap-1.5 font-pixel text-[0.5rem] uppercase">
           <Icon name="lucide:file-text" class="size-[11px]" />
           Latest post
         </p>
@@ -315,7 +315,7 @@ const ghData = JSON.stringify({ contributions: ghContributions, total: ghTotal }
           target={s.href.startsWith('mailto') ? undefined : '_blank'}
           rel={s.href.startsWith('mailto') ? undefined : 'noopener noreferrer'}
           aria-label={s.label}
-          class="size-7 rounded-[0.4rem] border bg-background flex items-center justify-center shrink-0 bento-link"
+          class="size-8 pixel-card flex items-center justify-center shrink-0"
         >
           <Icon name={s.icon} class="size-[0.75rem] text-muted-foreground" />
         </a>
@@ -368,29 +368,42 @@ const ghData = JSON.stringify({ contributions: ghContributions, total: ghTotal }
     pointer-events: none;
   }
 
-  /* Skills bar chart */
+  /* Retro LCD clock */
+  .lcd-clock {
+    font-family: 'VT323', 'JetBrains Mono Variable', ui-monospace, monospace;
+    font-size: 2.1rem;
+    line-height: 1;
+    letter-spacing: 0.04em;
+    color: var(--accent);
+    text-shadow: 0 0 6px color-mix(in srgb, var(--accent) 45%, transparent);
+  }
+
+  /* Skills — segmented HP bars, game style */
   .skill-row { display: flex; align-items: center; gap: 8px; }
   .skill-icon {
-    width: 22px; height: 22px; border-radius: 5px;
+    width: 22px; height: 22px;
     background: var(--muted); flex-shrink: 0;
     display: flex; align-items: center; justify-content: center;
-    font-size: 9px; font-weight: 700;
-    font-family: 'Geist Mono', ui-monospace, monospace;
-    color: var(--muted-foreground);
-    letter-spacing: -0.03em;
+    border: 1px solid var(--px-border);
   }
-  [data-theme='dark'] .skill-icon { background: oklch(0.22 0 0); }
-  .skill-bar-wrap { flex: 1; position: relative; height: 10px; }
-  .skill-bar-bg { position: absolute; inset: 0; background: var(--muted); border-radius: 3px; }
-  [data-theme='dark'] .skill-bar-bg { background: oklch(0.2 0 0); }
+  .skill-bar-wrap {
+    flex: 1; position: relative; height: 12px;
+    border: 1px solid var(--px-border);
+    padding: 2px;
+  }
+  .skill-bar-bg { position: absolute; inset: 2px; background: var(--muted); opacity: 0.4; }
   .skill-bar-fill {
-    position: absolute; top: 0; left: 0; height: 100%; border-radius: 3px;
-    background: var(--foreground); opacity: 0.15;
-    transition: width 0.6s cubic-bezier(0.16,1,0.3,1);
+    position: absolute; top: 2px; left: 2px; bottom: 2px;
+    max-width: calc(100% - 4px);
+    background: repeating-linear-gradient(
+      90deg,
+      var(--accent) 0px, var(--accent) 5px,
+      transparent 5px, transparent 7px
+    );
+    transition: width 0.6s steps(8, end);
   }
-  [data-theme='dark'] .skill-bar-fill { opacity: 0.35; }
   .skill-hours {
-    font-size: 11px; font-family: 'Geist Mono', ui-monospace, monospace;
+    font-size: 11px; font-family: 'JetBrains Mono Variable', ui-monospace, monospace;
     color: var(--muted-foreground); width: 36px; text-align: right; flex-shrink: 0;
   }
 
@@ -407,15 +420,7 @@ const ghData = JSON.stringify({ contributions: ghContributions, total: ghTotal }
     65%       { transform: rotate(-115deg); }
   }
 
-  /* Clickable bento glow */
-  .bento-link {
-    transition: box-shadow 0.2s ease;
-  }
-  .bento-link:hover {
-    box-shadow:
-      0 0 0 1px color-mix(in srgb, var(--accent) 70%, transparent),
-      0 0 14px 2px color-mix(in srgb, var(--accent) 20%, transparent);
-  }
+
 </style>
 
 <script>
@@ -434,6 +439,22 @@ const ghData = JSON.stringify({ contributions: ghContributions, total: ghTotal }
     };
     tick();
     _clockInterval = setInterval(tick, 1000);
+  }
+
+  function typewriter() {
+    const el = document.getElementById('typewriter');
+    if (!el || el.dataset.typed) return;
+    el.dataset.typed = 'true';
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const text = el.textContent ?? '';
+    el.textContent = '';
+    let i = 0;
+    const type = () => {
+      if (i >= text.length || !el.isConnected) return;
+      el.textContent = text.slice(0, ++i);
+      setTimeout(type, 60);
+    };
+    setTimeout(type, 250);
   }
 
   function checkOnline() {
@@ -526,6 +547,7 @@ const ghData = JSON.stringify({ contributions: ghContributions, total: ghTotal }
   // Re-run on every navigation (initial load + client-side transitions)
   document.addEventListener('astro:page-load', () => {
     startClock();
+    typewriter();
     checkOnline();
     buildGhGraph();
   });

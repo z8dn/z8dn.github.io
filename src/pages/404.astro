@@ -15,15 +15,28 @@ import { cn } from '@/lib/utils'
     class="flex flex-col items-center justify-center gap-y-4 text-center"
   >
     <div class="max-w-md">
-      <h1 class="mb-4 text-3xl font-medium">404: Page not found</h1>
-      <p class="prose">Oops! The page you're looking for doesn't exist.</p>
+      <p class="font-pixel text-destructive mb-6 text-2xl sm:text-3xl">
+        GAME OVER
+      </p>
+      <h1 class="font-pixel mb-4 text-sm">ERROR 404: PAGE NOT FOUND</h1>
+      <p class="prose">
+        The princess is in another castle. This page doesn't exist — but your
+        adventure can continue.
+      </p>
     </div>
     <Link
       href="/"
-      class={cn(buttonVariants({ variant: 'outline' }), 'flex gap-x-1.5 group')}
+      class={cn(
+        buttonVariants({ variant: 'outline' }),
+        'pixel-card font-pixel group flex gap-x-1.5 text-[0.6rem] uppercase',
+      )}
     >
-      <span class="transition-transform group-hover:-translate-x-1">&larr;</span
-      > Go to home page
+      <span class="transition-transform group-hover:-translate-x-1"
+        >&larr;</span
+      > Continue?
     </Link>
+    <p class="font-pixel text-muted-foreground/60 text-[0.55rem]">
+      CREDITS: 0 &nbsp;·&nbsp; INSERT COIN
+    </p>
   </section>
 </Layout>

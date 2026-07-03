@@ -24,6 +24,7 @@ const { class: className } = Astro.props
     <slot name="head" />
   </Head>
   <body class="flex h-fit min-h-screen flex-col gap-y-6 font-sans">
+    <div class="crt-overlay" aria-hidden="true"></div>
     <header
       class="bg-background/50 sticky top-0 z-50 divide-y backdrop-blur-sm xl:divide-none"
     >
@@ -37,5 +38,110 @@ const { class: className } = Astro.props
       <slot />
     </main>
     <Footer />
+
+    <script>
+      // ── 8-bit sound engine ─────────────────────────────────────────────
+      // Off by default; toggled via the header speaker button and persisted.
+      let audioCtx: AudioContext | null = null
+
+      const soundOn = () => localStorage.getItem('retro-sound') === 'on'
+
+      function beep(freq: number, duration = 0.05, delay = 0, volume = 0.04) {
+        if (!soundOn()) return
+        try {
+          audioCtx ??= new AudioContext()
+          if (audioCtx.state === 'suspended') audioCtx.resume()
+          const t = audioCtx.currentTime + delay
+          const osc = audioCtx.createOscillator()
+          const gain = audioCtx.createGain()
+          osc.type = 'square'
+          osc.frequency.setValueAtTime(freq, t)
+          gain.gain.setValueAtTime(volume, t)
+          gain.gain.exponentialRampToValueAtTime(0.0001, t + duration)
+          osc.connect(gain).connect(audioCtx.destination)
+          osc.start(t)
+          osc.stop(t + duration)
+        } catch {
+          /* audio unavailable — stay silent */
+        }
+      }
+
+      function jingle() {
+        // 1-up style arpeggio: E5 G5 E6 C6 D6 G6
+        ;[659, 784, 1319, 1047, 1175, 1568].forEach((f, i) =>
+          beep(f, 0.09, i * 0.09, 0.05),
+        )
+      }
+
+      // Delegated so listeners survive Astro view transitions
+      document.addEventListener('mouseover', (e) => {
+        const el = (e.target as Element)?.closest?.('a, button')
+        if (!el) return
+        const rel = e.relatedTarget as Node | null
+        if (rel && el.contains(rel)) return // still inside the same element
+        beep(720, 0.03)
+      })
+      document.addEventListener('click', (e) => {
+        if ((e.target as Element)?.closest?.('a, button')) beep(440, 0.06)
+      })
+
+      function updateSoundToggle() {
+        const btn = document.getElementById('sound-toggle')
+        if (!btn) return
+        const on = soundOn()
+        btn.setAttribute('aria-pressed', String(on))
+        btn.querySelector('[data-sound-on]')?.classList.toggle('hidden', !on)
+        btn.querySelector('[data-sound-off]')?.classList.toggle('hidden', on)
+      }
+
+      document.addEventListener('click', (e) => {
+        const btn = (e.target as Element)?.closest?.('#sound-toggle')
+        if (!btn) return
+        const next = soundOn() ? 'off' : 'on'
+        localStorage.setItem('retro-sound', next)
+        updateSoundToggle()
+        if (next === 'on') beep(880, 0.08)
+      })
+
+      // ── Konami code: ↑↑↓↓←→←→BA ────────────────────────────────────────
+      const KONAMI = [
+        'ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown',
+        'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight',
+        'b', 'a',
+      ]
+      let konamiPos = 0
+
+      function pixelConfetti() {
+        const colors = ['#a6e3a1', '#f38ba8', '#89b4fa', '#f9e2af', '#cba6f7']
+        for (let i = 0; i < 60; i++) {
+          const p = document.createElement('div')
+          p.className = 'px-confetti'
+          p.style.left = `${Math.random() * 100}vw`
+          p.style.background = colors[i % colors.length]
+          p.style.animationDuration = `${1.6 + Math.random() * 1.8}s`
+          p.style.animationDelay = `${Math.random() * 0.8}s`
+          p.addEventListener('animationend', () => p.remove())
+          document.body.appendChild(p)
+        }
+      }
+
+      document.addEventListener('keydown', (e) => {
+        const key = e.key.length === 1 ? e.key.toLowerCase() : e.key
+        konamiPos = key === KONAMI[konamiPos] ? konamiPos + 1 : key === KONAMI[0] ? 1 : 0
+        if (konamiPos < KONAMI.length) return
+        konamiPos = 0
+
+        const active = document.body.classList.toggle('konami-party')
+        if (active) {
+          jingle()
+          pixelConfetti()
+          document.getElementById('pixel-char')?.classList.add('pixel-dance')
+        } else {
+          document.getElementById('pixel-char')?.classList.remove('pixel-dance')
+        }
+      })
+
+      document.addEventListener('astro:page-load', updateSoundToggle)
+    </script>
   </body>
 </html>

@@ -1,16 +1,19 @@
 @import 'tailwindcss';
-@import '@fontsource-variable/outfit';
 @import '@fontsource-variable/jetbrains-mono';
+@import '@fontsource/press-start-2p';
+@import '@fontsource/vt323';
 
 @custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 
 @theme inline {
   --font-sans:
-    'Outfit Variable', Geist, ui-sans-serif, system-ui, sans-serif,
-    'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    'JetBrains Mono Variable', 'Geist Mono', ui-monospace, SFMono-Regular,
+    Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
   --font-mono:
     'JetBrains Mono Variable', 'Geist Mono', ui-monospace, SFMono-Regular,
     Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+  --font-pixel:
+    'Press Start 2P', 'JetBrains Mono Variable', ui-monospace, monospace;
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -26,14 +29,6 @@
 
   --color-border: var(--border);
   --color-ring: var(--ring);
-}
-
-@font-face {
-  font-family: 'Geist';
-  src: url('/fonts/GeistVF.woff2') format('woff2-variations');
-  font-weight: 100 900;
-  font-style: normal;
-  font-display: swap;
 }
 
 @font-face {
@@ -53,9 +48,13 @@
   --muted:              #ccd0da;
   --muted-foreground:   #7c7f93;
   --destructive:        #d20f39;
-  --border:             #bcc0cc;
+  --border:             #9ca0b0;
   --ring:               #1e66f5;
-  --accent:             #10b981;
+  --accent:             #40a02b;
+
+  /* Pixel design tokens */
+  --px-border: #5c5f77;
+  --px-shadow-solid: #acb0be;
 }
 
 /* ── Catppuccin Mocha (dark) ─────────────────────────────────────────────── */
@@ -67,9 +66,12 @@
   --muted:              #313244;
   --muted-foreground:   #9399b2;
   --destructive:        #f38ba8;
-  --border:             #45475a;
+  --border:             #585b70;
   --ring:               #89b4fa;
-  --accent:             #10b981;
+  --accent:             #a6e3a1;
+
+  --px-border: #6c7086;
+  --px-shadow-solid: #11111b;
 }
 
 @layer base {
@@ -79,5 +81,176 @@
   ::backdrop,
   ::file-selector-button {
     @apply border-border outline-ring/50 tracking-tight;
+  }
+
+  /* Pixel worlds have no curves — kill every rounded corner site-wide */
+  *,
+  ::before,
+  ::after {
+    border-radius: 0 !important;
+  }
+
+  ::selection {
+    background: var(--accent);
+    color: var(--background);
+  }
+
+  /* Chunky pixel scrollbar */
+  ::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--background);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--muted-foreground);
+    border: 3px solid var(--background);
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--accent);
+  }
+}
+
+@layer components {
+  /* ── Pixel font utility ─────────────────────────────────────────────── */
+  .font-pixel {
+    font-family: var(--font-pixel);
+    letter-spacing: 0;
+    -webkit-font-smoothing: none;
+    font-smooth: never;
+    line-height: 1.6;
+  }
+
+  /* ── Pixel card: hard 2px border + solid offset shadow ──────────────── */
+  .pixel-card {
+    background: var(--background);
+    border: 2px solid var(--px-border);
+    box-shadow: 4px 4px 0 0 var(--px-shadow-solid);
+  }
+
+  /* Clickable pixel cards lift on hover, press down on click */
+  a.pixel-card,
+  button.pixel-card,
+  .pixel-card-interactive {
+    transition:
+      transform 0.1s steps(2, end),
+      box-shadow 0.1s steps(2, end);
+  }
+  a.pixel-card:hover,
+  button.pixel-card:hover,
+  .pixel-card-interactive:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 6px 6px 0 0 var(--accent);
+    border-color: var(--accent);
+  }
+  a.pixel-card:active,
+  button.pixel-card:active,
+  .pixel-card-interactive:active {
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px 0 0 var(--px-shadow-solid);
+  }
+
+  /* ── Blinking terminal cursor ────────────────────────────────────────── */
+  .blink-cursor::after {
+    content: '▊';
+    margin-left: 0.15em;
+    color: var(--accent);
+    animation: px-blink 1.1s steps(1, end) infinite;
+  }
+
+  /* ── Retro nav: "▶" selector appears on hover/focus like a game menu ── */
+  .nav-retro {
+    position: relative;
+    padding-left: 1em;
+  }
+  .nav-retro::before {
+    content: '▶';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    translate: 0 -50%;
+    font-size: 0.7em;
+    color: var(--accent);
+    opacity: 0;
+  }
+  .nav-retro:hover::before,
+  .nav-retro:focus-visible::before,
+  .nav-retro[aria-current='page']::before {
+    opacity: 1;
+    animation: px-blink 0.8s steps(1, end) infinite;
+  }
+}
+
+@keyframes px-blink {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0; }
+}
+
+/* ── CRT overlay: scanlines + vignette (pure decoration) ────────────────── */
+.crt-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0px,
+    transparent 2px,
+    color-mix(in srgb, var(--foreground) 3.5%, transparent) 3px,
+    transparent 4px
+  );
+}
+.crt-overlay::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 60%,
+    color-mix(in srgb, var(--foreground) 6%, transparent) 100%
+  );
+}
+
+/* ── Konami mode: the whole page celebrates ─────────────────────────────── */
+@keyframes px-party-hue {
+  0%   { filter: hue-rotate(0deg); }
+  100% { filter: hue-rotate(360deg); }
+}
+.konami-party {
+  animation: px-party-hue 2.4s linear infinite;
+}
+@keyframes px-dance {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25%      { transform: translateY(-6px) rotate(-8deg); }
+  50%      { transform: translateY(0) rotate(0deg); }
+  75%      { transform: translateY(-6px) rotate(8deg); }
+}
+.pixel-dance {
+  animation: px-dance 0.5s steps(4, end) infinite;
+  transform-origin: 50% 90%;
+}
+
+/* Falling pixel confetti (spawned by the konami script) */
+.px-confetti {
+  position: fixed;
+  top: -12px;
+  width: 8px;
+  height: 8px;
+  z-index: 10000;
+  pointer-events: none;
+  animation: px-confetti-fall linear forwards;
+}
+@keyframes px-confetti-fall {
+  to { transform: translateY(105vh) rotate(540deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .blink-cursor::after,
+  .nav-retro:hover::before,
+  .konami-party,
+  .pixel-dance,
+  .px-confetti {
+    animation: none !important;
   }
 }
