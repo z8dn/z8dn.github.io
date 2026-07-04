@@ -151,6 +151,46 @@
     box-shadow: 2px 2px 0 0 var(--px-shadow-solid);
   }
 
+  /* ── Peeking mini-avatar: hides below a card's bottom edge, pops up on
+     hover with a greeting bubble (see PixelPeek.astro) ────────────────── */
+  .pixel-peek {
+    position: absolute;
+    right: 10px;
+    bottom: 0;
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 3px;
+    pointer-events: none;
+    transform: translateY(102%);
+    transition: transform 0.16s steps(3, end);
+  }
+  .pixel-card:hover .pixel-peek {
+    transform: translateY(0);
+  }
+  .pixel-peek-bubble {
+    border: 2px solid var(--px-border);
+    background: var(--background);
+    box-shadow: 2px 2px 0 0 var(--px-shadow-solid);
+    padding: 3px 5px;
+    font-size: 0.45rem;
+    line-height: 1;
+    color: var(--foreground);
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.1s steps(2, end) 0.16s;
+  }
+  .pixel-card:hover .pixel-peek-bubble {
+    opacity: 1;
+  }
+  .peek-hand {
+    transform: translateY(0);
+  }
+  .pixel-card:hover .peek-hand {
+    animation: px-peek-wave 0.5s steps(2, end) infinite;
+  }
+
   /* ── Blinking terminal cursor ────────────────────────────────────────── */
   .blink-cursor::after {
     content: '▊';
@@ -185,6 +225,11 @@
 @keyframes px-blink {
   0%, 100% { opacity: 1; }
   50%      { opacity: 0; }
+}
+
+@keyframes px-peek-wave {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-1px); }
 }
 
 /* ── CRT overlay: scanlines + vignette (pure decoration) ────────────────── */

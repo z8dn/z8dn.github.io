@@ -1,0 +1,139 @@
+---
+// Mini variant of the pixel avatar that peeks up from a bento card's bottom
+// edge on hover, holding a per-block accessory and greeting the visitor.
+// Parent card needs `relative overflow-hidden`; reveal CSS lives in global.css.
+type Accessory = 'wave' | 'flag' | 'star' | 'case' | 'coffee' | 'post'
+
+interface Props {
+  greeting: string
+  accessory?: Accessory
+}
+
+const { greeting, accessory = 'wave' } = Astro.props
+---
+
+<div class="pixel-peek" aria-hidden="true">
+  <div class="pixel-peek-bubble font-pixel">{greeting}</div>
+  <svg
+    viewBox="0 0 22 16"
+    class="w-14"
+    style="image-rendering:pixelated;shape-rendering:crispEdges"
+  >
+    <!-- Hair -->
+    <rect x="7" y="5" width="8" height="1" fill="#221a16"></rect>
+    <rect x="6" y="6" width="10" height="1" fill="#221a16"></rect>
+    <rect x="8" y="6" width="2" height="1" fill="#4a3b32"></rect>
+    <rect x="5" y="7" width="12" height="1" fill="#221a16"></rect>
+    <rect x="7" y="7" width="2" height="1" fill="#4a3b32"></rect>
+    <rect x="5" y="8" width="8" height="1" fill="#221a16"></rect>
+    <rect x="16" y="8" width="1" height="1" fill="#221a16"></rect>
+    <rect x="5" y="9" width="4" height="1" fill="#221a16"></rect>
+    <rect x="16" y="9" width="1" height="1" fill="#221a16"></rect>
+    <rect x="5" y="10" width="1" height="3" fill="#221a16"></rect>
+    <rect x="16" y="10" width="1" height="3" fill="#221a16"></rect>
+    <!-- Forehead -->
+    <rect x="13" y="8" width="3" height="1" fill="#f2c49b"></rect>
+    <rect x="9" y="9" width="7" height="1" fill="#f2c49b"></rect>
+    <!-- Ears -->
+    <rect x="4" y="10" width="1" height="2" fill="#f2c49b"></rect>
+    <rect x="17" y="10" width="1" height="2" fill="#f2c49b"></rect>
+    <rect x="4" y="12" width="1" height="1" fill="#d9a87c"></rect>
+    <rect x="17" y="12" width="1" height="1" fill="#d9a87c"></rect>
+    <!-- Brows -->
+    <rect x="6" y="10" width="1" height="1" fill="#f2c49b"></rect>
+    <rect x="7" y="10" width="3" height="1" fill="#1c140f"></rect>
+    <rect x="10" y="10" width="2" height="1" fill="#f2c49b"></rect>
+    <rect x="12" y="10" width="3" height="1" fill="#1c140f"></rect>
+    <rect x="15" y="10" width="1" height="1" fill="#f2c49b"></rect>
+    <!-- Eyes -->
+    <rect x="6" y="11" width="1" height="1" fill="#f2c49b"></rect>
+    <rect x="7" y="11" width="1" height="1" fill="#ffffff"></rect>
+    <rect x="8" y="11" width="1" height="1" fill="#1c140f"></rect>
+    <rect x="9" y="11" width="3" height="1" fill="#f2c49b"></rect>
+    <rect x="12" y="11" width="1" height="1" fill="#1c140f"></rect>
+    <rect x="13" y="11" width="1" height="1" fill="#ffffff"></rect>
+    <rect x="14" y="11" width="2" height="1" fill="#f2c49b"></rect>
+    <!-- Cheeks / nose / smile / chin -->
+    <rect x="6" y="12" width="10" height="1" fill="#f2c49b"></rect>
+    <rect x="6" y="13" width="10" height="1" fill="#f2c49b"></rect>
+    <rect x="10" y="13" width="1" height="1" fill="#d9a87c"></rect>
+    <rect x="6" y="14" width="10" height="1" fill="#f2c49b"></rect>
+    <rect x="9" y="14" width="4" height="1" fill="#b97a63"></rect>
+    <rect x="7" y="15" width="8" height="1" fill="#f2c49b"></rect>
+
+    <!-- Raised left hand, always waving -->
+    <g class="peek-hand">
+      <rect x="1" y="9" width="2" height="2" fill="#f2c49b"></rect>
+    </g>
+
+    {
+      accessory === 'wave' && (
+        <g class="peek-hand">
+          <rect x="19" y="9" width="2" height="2" fill="#f2c49b" />
+        </g>
+      )
+    }
+    {
+      accessory === 'flag' && (
+        <>
+          {/* Vietnam flag: red field, yellow star, held on a pole */}
+          <rect x="19" y="4" width="1" height="8" fill="#5c3a1e" />
+          <rect x="15" y="4" width="4" height="3" fill="#d20f39" />
+          <rect x="16" y="5" width="1" height="1" fill="#f9e2af" />
+          <g class="peek-hand">
+            <rect x="18" y="10" width="2" height="2" fill="#f2c49b" />
+          </g>
+        </>
+      )
+    }
+    {
+      accessory === 'star' && (
+        <>
+          <rect x="19" y="4" width="1" height="1" fill="#f9e2af" />
+          <rect x="18" y="5" width="3" height="1" fill="#f9e2af" />
+          <rect x="19" y="6" width="1" height="1" fill="#f9e2af" />
+          <g class="peek-hand">
+            <rect x="19" y="8" width="2" height="2" fill="#f2c49b" />
+          </g>
+        </>
+      )
+    }
+    {
+      accessory === 'case' && (
+        <>
+          <rect x="18" y="6" width="2" height="1" fill="#5c3a1e" />
+          <rect x="17" y="7" width="4" height="3" fill="#a0692f" />
+          <rect x="17" y="8" width="4" height="1" fill="#8a5626" />
+          <g class="peek-hand">
+            <rect x="18" y="10" width="2" height="2" fill="#f2c49b" />
+          </g>
+        </>
+      )
+    }
+    {
+      accessory === 'coffee' && (
+        <>
+          <rect x="18" y="5" width="1" height="1" fill="#9399b2" />
+          <rect x="19" y="6" width="1" height="1" fill="#9399b2" />
+          <rect x="17" y="8" width="3" height="3" fill="#e64553" />
+          <rect x="20" y="9" width="1" height="1" fill="#e64553" />
+          <g class="peek-hand">
+            <rect x="17" y="11" width="3" height="1" fill="#f2c49b" />
+          </g>
+        </>
+      )
+    }
+    {
+      accessory === 'post' && (
+        <>
+          <rect x="17" y="5" width="4" height="6" fill="#ffffff" />
+          <rect x="18" y="6" width="2" height="1" fill="#9399b2" />
+          <rect x="18" y="8" width="2" height="1" fill="#9399b2" />
+          <g class="peek-hand">
+            <rect x="18" y="11" width="2" height="1" fill="#f2c49b" />
+          </g>
+        </>
+      )
+    }
+  </svg>
+</div>

@@ -1,6 +1,7 @@
 ---
 import Link from '@/components/Link.astro'
 import PageHead from '@/components/PageHead.astro'
+import PixelPeek from '@/components/PixelPeek.astro'
 import { buttonVariants } from '@/components/ui/button'
 import Layout from '@/layouts/Layout.astro'
 import { Icon } from 'astro-icon/components'
@@ -209,6 +210,7 @@ const ghData = JSON.stringify({ contributions: ghContributions, total: ghTotal }
         <p class="text-muted-foreground text-[0.75rem]">Vietnam · UTC+7</p>
         <p id="hcm-clock" class="lcd-clock mt-2">--:-- --</p>
       </div>
+      <PixelPeek greeting="xin chào!" accessory="flag" />
     </div>
 
     <!-- Featured project — col2 row2 -->
@@ -216,8 +218,9 @@ const ghData = JSON.stringify({ contributions: ghContributions, total: ghTotal }
       href={featuredProject.url}
       target="_blank"
       rel="noopener noreferrer"
-      class="[grid-column:2] [grid-row:2] pixel-card p-2.5 lg:p-5 flex flex-col gap-y-2 group "
+      class="[grid-column:2] [grid-row:2] pixel-card p-2.5 lg:p-5 flex flex-col gap-y-2 group relative overflow-hidden"
     >
+      <PixelPeek greeting="i built this!" accessory="star" />
       <p class="text-muted-foreground flex items-center gap-1.5 font-pixel text-[0.5rem] uppercase">
         <Icon name="lucide:box" class="size-[11px]" />
         Featured project
@@ -247,7 +250,8 @@ const ghData = JSON.stringify({ contributions: ghContributions, total: ghTotal }
     </a>
 
     <!-- Career timeline — col3 rows1-2 -->
-    <div class="[grid-column:3] [grid-row:1/3] flex flex-col gap-y-2 pixel-card p-2.5 lg:p-5">
+    <div class="[grid-column:3] [grid-row:1/3] flex flex-col gap-y-2 pixel-card p-2.5 lg:p-5 relative overflow-hidden">
+      <PixelPeek greeting="level ups!" accessory="case" />
       <p class="text-muted-foreground flex items-center gap-1.5 font-pixel text-[0.5rem] uppercase">
         <Icon name="lucide:briefcase" class="size-[11px]" />
         Career
@@ -284,7 +288,8 @@ const ghData = JSON.stringify({ contributions: ghContributions, total: ghTotal }
     </div>
 
     <!-- Skills / WakaTime — col3 rows3-4 -->
-    <div class="[grid-column:3] [grid-row:3/5] pixel-card p-2.5 lg:p-5">
+    <div class="[grid-column:3] [grid-row:3/5] pixel-card p-2.5 lg:p-5 relative overflow-hidden">
+      <PixelPeek greeting="xp grinding!" accessory="coffee" />
       <p class="text-muted-foreground flex items-center gap-1.5 font-pixel text-[0.5rem] uppercase mb-2">
         <Icon name="lucide:bar-chart-2" class="size-[11px]" />
         Time coding
@@ -314,7 +319,8 @@ const ghData = JSON.stringify({ contributions: ghContributions, total: ghTotal }
     </div>
 
     <!-- Activity heatmap — col1 row3 -->
-    <div class="[grid-column:1] [grid-row:3] pixel-card p-2.5 lg:p-5">
+    <div class="[grid-column:1] [grid-row:3] pixel-card p-2.5 lg:p-5 relative overflow-hidden">
+      <PixelPeek greeting="daily streak!" accessory="wave" />
       <p class="text-muted-foreground flex items-center gap-1.5 font-pixel text-[0.5rem] uppercase mb-2">
         <Icon name="lucide:activity" class="size-[11px]" />
         Activity
@@ -326,8 +332,9 @@ const ghData = JSON.stringify({ contributions: ghContributions, total: ghTotal }
     {latestPost && (
       <a
         href={`/blog/${latestPost.id}`}
-        class="[grid-column:1/3] [grid-row:4] pixel-card p-2.5 lg:p-5 flex flex-col gap-1.5 group"
+        class="[grid-column:1/3] [grid-row:4] pixel-card p-2.5 lg:p-5 flex flex-col gap-1.5 group relative overflow-hidden"
       >
+        <PixelPeek greeting="read me!" accessory="post" />
         <p class="text-muted-foreground flex items-center gap-1.5 font-pixel text-[0.5rem] uppercase">
           <Icon name="lucide:file-text" class="size-[11px]" />
           Latest post
