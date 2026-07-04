@@ -1,36 +1,57 @@
 ---
 import Link from '@/components/Link.astro'
 import ThemeToggle from '@/components/ThemeToggle.astro'
+import { Button } from '@/components/ui/button'
 import { NAV_LINKS, SITE } from '@/consts'
+import { Icon } from 'astro-icon/components'
 import { Image } from 'astro:assets'
 import logo from '../../public/static/logo.svg'
 ---
 
-<div>
+<div class="border-b-2 border-(--px-border)">
   <div
     class="mx-auto flex max-w-3xl items-center justify-between gap-4 px-4 py-3"
   >
     <Link href="/" class="flex shrink-0 items-center justify-center gap-3">
-      <Image src={logo} alt="Logo" class="size-5 sm:size-6" />
+      <Image
+        src={logo}
+        alt="Logo"
+        class="size-5 sm:size-6"
+        style="image-rendering:pixelated"
+      />
       <span
-        class="hidden h-full text-lg leading-none font-medium min-[400px]:block"
+        class="font-pixel blink-cursor hidden text-[0.7rem] leading-none min-[400px]:block"
         >{SITE.title}</span
       >
     </Link>
     <div class="flex items-center gap-4">
-      <nav class="flex items-center gap-4 text-sm sm:gap-6">
+      <nav class="flex items-center gap-3 sm:gap-5">
         {
           NAV_LINKS.map((item) => (
             <Link
               href={item.href}
-              class="text-foreground/60 hover:text-foreground capitalize transition-colors"
+              class="nav-retro font-pixel text-foreground/60 hover:text-foreground text-[0.6rem] uppercase transition-colors"
             >
               {item.label}
             </Link>
           ))
         }
       </nav>
-      <ThemeToggle transition:persist />
+      <div class="flex items-center gap-1">
+        <Button
+          id="sound-toggle"
+          variant="ghost"
+          size="icon"
+          title="Toggle 8-bit sounds"
+          aria-pressed="false"
+          className="-my-2 size-8"
+        >
+          <Icon name="lucide:volume-2" class="hidden size-4" data-sound-on />
+          <Icon name="lucide:volume-x" class="size-4" data-sound-off />
+          <span class="sr-only">Toggle 8-bit sounds</span>
+        </Button>
+        <ThemeToggle transition:persist />
+      </div>
     </div>
   </div>
 </div>
