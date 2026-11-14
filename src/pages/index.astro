@@ -7,6 +7,18 @@ import { getAllPosts, getRecentPosts } from '@/lib/data-utils'
 import { SOCIAL_LINKS } from '@/consts'
 import GradleDemo from '@/stageshow/gradle/GradleDemo'
 import PhoneDemo from '@/stageshow/phone/PhoneDemo'
+import fs from 'node:fs'
+import path from 'node:path'
+import { Image } from 'astro:assets'
+import hclLogo from '@/assets/logos/hcltech.jpg'
+import anzLogo from '@/assets/logos/anz-plus.png'
+import naverLogo from '@/assets/logos/naver.png'
+import splusLogo from '@/assets/logos/splus.png'
+import slide1 from '@/assets/plugin/slide-1.png'
+import slide2 from '@/assets/plugin/slide-2.png'
+import slide3 from '@/assets/plugin/slide-3.png'
+import slide4 from '@/assets/plugin/slide-4.png'
+import slide5 from '@/assets/plugin/slide-5.png'
 import '@/styles/bento.css'
 
 const [latest] = await getRecentPosts(1)
@@ -52,30 +64,48 @@ try {
   /* use fallback */
 }
 
-// GitHub contributions from both accounts, fetched at build time and merged by date.
+// GitHub contributions from both accounts, read at build time and merged by date.
 // The last good result is saved to src/data so a slow or down API never blanks the tile.
 const GH_CACHE = path.join(process.cwd(), 'src/data/gh-contributions.json')
 let merged = new Map<string, number>()
 let ghFetched = true
+// Read GitHub's own contribution calendar for each account: every day cell
+// carries its date, and a tooltip keyed to the cell carries the count.
 for (const user of ['z8dn', 'z8dn-anz']) {
   try {
-    const r = await fetch(
-      `https://github-contributions-api.jogruber.de/v4/${user}?y=last`,
-      { signal: AbortSignal.timeout(8000) },
-    )
+    const r = await fetch(`https://github.com/users/${user}/contributions`, {
+      headers: { 'User-Agent': 'z8dn-site-build' },
+      signal: AbortSignal.timeout(10000),
+    })
     if (!r.ok) throw new Error(String(r.status))
-    const d = await r.json()
-    for (const c of (d.contributions ?? []) as { date: string; count: number }[]) {
-      merged.set(c.date, (merged.get(c.date) ?? 0) + c.count)
+    const html = await r.text()
+    const dateById = new Map<string, string>()
+    for (const [td] of html.matchAll(/<td[^>]*ContributionCalendar-day[^>]*>/g)) {
+      const id = td.match(/\bid=\x22([^\x22]+)\x22/)?.[1]
+      const date = td.match(/data-date=\x22([^\x22]+)\x22/)?.[1]
+      if (id && date) dateById.set(id, date)
+    }
+    if (!dateById.size) throw new Error('no calendar cells')
+    for (const [, id, text] of html.matchAll(
+      /<tool-tip[^>]*\bfor=\x22([^\x22]+)\x22[^>]*>\s*([^<]*)/g,
+    )) {
+      const date = dateById.get(id)
+      const n = Number(text.match(/^([\d,]+) contribution/)?.[1]?.replace(/,/g, ''))
+      if (date && n > 0) merged.set(date, (merged.get(date) ?? 0) + n)
     }
   } catch {
     ghFetched = false
   }
 }
 if (ghFetched) {
+  // Write only in production builds and only when changed (avoids a dev reload loop).
   try {
-    fs.mkdirSync(path.dirname(GH_CACHE), { recursive: true })
-    fs.writeFileSync(GH_CACHE, JSON.stringify(Object.fromEntries(merged)))
+    const next = JSON.stringify(Object.fromEntries(merged))
+    const prev = fs.existsSync(GH_CACHE) ? fs.readFileSync(GH_CACHE, 'utf8') : ''
+    if (!import.meta.env.DEV && next !== prev) {
+      fs.mkdirSync(path.dirname(GH_CACHE), { recursive: true })
+      fs.writeFileSync(GH_CACHE, next)
+    }
   } catch {
     /* cache is best-effort */
   }
@@ -156,24 +186,21 @@ const career: {
   },
 ]
 
+const stack = [
+  { name: 'Kotlin', icon: 'simple-icons:kotlin' },
+  { name: 'Android', icon: 'simple-icons:android' },
+  { name: 'Gradle', icon: 'simple-icons:gradle' },
+  { name: 'Compose', icon: 'simple-icons:jetpackcompose' },
+  { name: 'IntelliJ SDK', icon: 'simple-icons:intellijidea' },
+  { name: 'Claude', icon: 'simple-icons:claude' },
+]
+
 const email = SOCIAL_LINKS.find((l) => l.label === 'Email')
 const emailAddress = email?.href.replace('mailto:', '') ?? ''
 const contactLinks = SOCIAL_LINKS.filter((l) =>
   ['LinkedIn', 'Medium', 'RSS'].includes(l.label),
 )
 const fmt = (d: Date) => d.toISOString().slice(0, 10)
-import fs from 'node:fs'
-import path from 'node:path'
-import { Image } from 'astro:assets'
-import hclLogo from '@/assets/logos/hcltech.jpg'
-import anzLogo from '@/assets/logos/anz-plus.png'
-import naverLogo from '@/assets/logos/naver.png'
-import splusLogo from '@/assets/logos/splus.png'
-import slide1 from '@/assets/plugin/slide-1.png'
-import slide2 from '@/assets/plugin/slide-2.png'
-import slide3 from '@/assets/plugin/slide-3.png'
-import slide4 from '@/assets/plugin/slide-4.png'
-import slide5 from '@/assets/plugin/slide-5.png'
 
 const pluginSlides = [
   { src: slide1, alt: 'The files Android view hides, one click away: build outputs and project files in the Android project tree' },
@@ -400,10 +427,29 @@ const pluginSlides = [
         </div>
       </section>
 
-      <!-- Pattern B -->
-      <div class="tile tile--bare t-patb" aria-hidden="true">
-        <BoardTile variant="board" />
-      </div>
+      <!-- Stack: the tools as parts on a board -->
+      <section class="tile t-patb t-stack">
+        <span class="hw" data-part="Z8-09" aria-hidden="true"></span>
+        <p class="eyebrow">Stack</p>
+        <div class="stack-board">
+          <svg class="stack-traces" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+            <path d="M50 4V96" />
+            <path d="M38 17H62" />
+            <path d="M38 50H62" />
+            <path d="M38 83H62" />
+          </svg>
+          <ul class="stack-chips">
+            {
+              stack.map((t) => (
+                <li class="stack-chip" title={t.name}>
+                  <Icon name={t.icon} aria-hidden="true" />
+                  <span>{t.name}</span>
+                </li>
+              ))
+            }
+          </ul>
+        </div>
+      </section>
 
       <!-- Post -->
       {

@@ -26,7 +26,7 @@ Posts are located in `src/content/blog/`. Each post is an MDX file that can incl
 
 **Zayden (z8dn)**
 - GitHub: [z8dn](https://github.com/z8dn)
-- Email: [phunggiabuu30@gmail.com](mailto:phunggiabuu30@gmail.com)
+- Email: [z8dn.phung@gmail.com](mailto:z8dn.phung@gmail.com)
 
 ## 📄 License
 

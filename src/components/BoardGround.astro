@@ -1,75 +1,88 @@
 ---
-// Page ground for the reading pages: registration marks across the page and
-// circuit traces running down the outer margins, fading out before the text.
-// Original drawing in the site's own board language; fully static.
-const sides = ['left', 'right'] as const
+// Page ground: an original circuit-board drawing tiled across the whole
+// background of every page, with + registration marks. Fully static.
+// `soft` keeps it faint behind the text column on reading pages.
+interface Props {
+  soft?: boolean
+}
+const { soft = false } = Astro.props
 ---
 
-<div class="board-ground" aria-hidden="true">
+<div class:list={['board-ground', { 'board-ground--soft': soft }]} aria-hidden="true">
   <div class="bg-marks"></div>
-  {
-    sides.map((side) => (
-      <svg class:list={['bg-rail', `bg-rail--${side}`]} focusable="false">
-        <defs>
-          <pattern
-            id={`bg-rail-${side}`}
-            width="320"
-            height="640"
-            patternUnits="userSpaceOnUse"
-          >
-            {/* bus: four lanes, 8px pitch, with one jog out and back (seamless top to bottom) */}
-            {[0, 1, 2, 3].map((i) => {
-              const x = 24 + i * 8
-              return (
-                <path
-                  class="ln"
-                  d={`M${x} 0V200L${x + 32} 232V440L${x} 472V640`}
-                />
-              )
-            })}
-            {/* branches off the inner lane, each ending in a via */}
-            <path class="ln" d="M80 296l16 16H160" />
-            <circle class="via" cx="164" cy="312" r="4" />
-            <path class="ln" d="M80 400l16 -16H136" />
-            <circle class="via" cx="140" cy="384" r="4" />
+  <svg class="bg-board" focusable="false">
+    <defs>
+      <pattern id="bg-board" width="640" height="640" patternUnits="userSpaceOnUse">
+        {/* bus: four lanes, 8px pitch, with one jog out and back (seamless top to bottom) */}
+        {[0, 1, 2, 3].map((i) => {
+          const x = 24 + i * 8
+          return <path class="ln" d={`M${x} 0V200L${x + 32} 232V440L${x} 472V640`} />
+        })}
+        {/* branches off the inner lane, each ending in a via */}
+        <path class="ln" d="M80 296l16 16H160" />
+        <circle class="via" cx="164" cy="312" r="4" />
+        <path class="ln" d="M80 400l16 -16H136" />
+        <circle class="via" cx="140" cy="384" r="4" />
 
-            {/* chip with pins */}
-            <rect class="part" x="120" y="80" width="64" height="64" rx="4" />
-            <rect class="ln" x="128" y="88" width="48" height="48" rx="2" />
-            <circle class="dot" cx="134" cy="94" r="1.5" />
-            {[0, 1, 2, 3, 4].map((i) => (
-              <>
-                <path class="ln" d={`M112 ${96 + i * 8}h8`} />
-                <path class="ln" d={`M184 ${96 + i * 8}h8`} />
-              </>
-            ))}
-            {/* three traces leaving the chip's lower edge */}
-            <path class="ln" d="M136 144V184" />
-            <circle class="via" cx="136" cy="188" r="4" />
-            <path class="ln" d="M152 144V200l16 16H216" />
-            <circle class="via" cx="220" cy="216" r="4" />
-            <path class="ln" d="M168 144V160l16 16H232" />
-            <circle class="via" cx="236" cy="176" r="4" />
+        {/* chip with pins */}
+        <rect class="part" x="120" y="80" width="64" height="64" rx="4" />
+        <rect class="ln" x="128" y="88" width="48" height="48" rx="2" />
+        <circle class="dot" cx="134" cy="94" r="1.5" />
+        {[0, 1, 2, 3, 4].map((i) => (
+          <>
+            <path class="ln" d={`M112 ${96 + i * 8}h8`} />
+            <path class="ln" d={`M184 ${96 + i * 8}h8`} />
+          </>
+        ))}
+        <path class="ln" d="M136 144V184" />
+        <circle class="via" cx="136" cy="188" r="4" />
+        <path class="ln" d="M152 144V200l16 16H216" />
+        <circle class="via" cx="220" cy="216" r="4" />
+        <path class="ln" d="M168 144V160l16 16H232" />
+        <circle class="via" cx="236" cy="176" r="4" />
 
-            {/* a row of small parts, test points, a mounting hole */}
-            {[0, 1, 2, 3, 4].map((i) => (
-              <rect class="part" x={112 + i * 16} y="520" width="8" height="4" rx="1" />
-            ))}
-            <circle class="via" cx="200" cy="560" r="4" />
-            <circle class="dot" cx="200" cy="560" r="1.5" />
-            <circle class="via" cx="232" cy="600" r="4" />
-            <circle class="dot" cx="232" cy="600" r="1.5" />
-            <circle class="ln" cx="120" cy="592" r="8" />
-            <circle class="ln" cx="120" cy="592" r="4" />
-          </pattern>
-        </defs>
-        <rect width="320" height="100%" fill={`url(#bg-rail-${side})`} />
-        {side === 'left' && (
-          <rect class="sig" x="196" y="100" width="6" height="6" rx="1" />
-        )}
-      </svg>
-    ))
-  }
+        {/* small parts, test points, a mounting hole */}
+        {[0, 1, 2, 3, 4].map((i) => (
+          <rect class="part" x={112 + i * 16} y="520" width="8" height="4" rx="1" />
+        ))}
+        <circle class="via" cx="200" cy="560" r="4" />
+        <circle class="dot" cx="200" cy="560" r="1.5" />
+        <circle class="via" cx="232" cy="600" r="4" />
+        <circle class="dot" cx="232" cy="600" r="1.5" />
+        <circle class="ln" cx="120" cy="592" r="8" />
+        <circle class="ln" cx="120" cy="592" r="4" />
+
+        {/* right half: a ringed coil, a three-lane run between vias, a small chip */}
+        {[8, 16, 24, 32, 40].map((r) => (
+          <circle class="ln" cx="480" cy="136" r={r} />
+        ))}
+        <circle class="dot" cx="480" cy="136" r="1.5" />
+        {[0, 1, 2].map((i) => (
+          <>
+            <path class="ln" d={`M${304 + i * 8} ${320 + i * 8}H${592 - i * 8}`} />
+            <circle class="via" cx={300 + i * 8} cy={320 + i * 8} r="3" />
+            <circle class="via" cx={596 - i * 8} cy={320 + i * 8} r="3" />
+          </>
+        ))}
+        <rect class="part" x="424" y="432" width="48" height="32" rx="3" />
+        {[0, 1, 2, 3].map((i) => (
+          <>
+            <path class="ln" d={`M${432 + i * 8} 424v8`} />
+            <path class="ln" d={`M${432 + i * 8} 464v8`} />
+          </>
+        ))}
+        <path class="ln" d="M448 424V376l-16 -16V344" />
+        <path class="ln" d="M456 472V512l16 16H544" />
+        <circle class="via" cx="548" cy="528" r="4" />
+        <circle class="via" cx="560" cy="232" r="4" />
+        <circle class="dot" cx="560" cy="232" r="1.5" />
+        <circle class="ln" cx="576" cy="592" r="8" />
+        <circle class="ln" cx="576" cy="592" r="4" />
+      </pattern>
+    </defs>
+    <rect width="100%" height="100%" fill="url(#bg-board)" />
+    <rect class="sig" x="196" y="100" width="6" height="6" rx="1" />
+  </svg>
 </div>
 
 <style>
@@ -94,58 +107,53 @@ const sides = ['left', 'right'] as const
       0 0 / 48px 48px;
   }
 
-  /* traces live in the outer margins only, and dissolve before the text column */
-  .bg-rail {
+  .bg-board {
     position: absolute;
-    top: 0;
-    width: 320px;
+    inset: 0;
+    width: 100%;
     height: 100%;
-    display: none;
+  }
+  /* reading pages: full strength in the margins, faint behind the text column */
+  .board-ground--soft .bg-board {
     -webkit-mask-image: linear-gradient(
       to right,
       #000 0,
-      #000 calc(var(--gutter) * 0.45),
-      transparent calc(var(--gutter) + 1rem)
+      #000 calc(var(--gutter) * 0.6),
+      rgb(0 0 0 / 0.32) calc(var(--gutter) + 2rem),
+      rgb(0 0 0 / 0.32) calc(100% - var(--gutter) - 2rem),
+      #000 calc(100% - var(--gutter) * 0.6),
+      #000 100%
     );
     mask-image: linear-gradient(
       to right,
       #000 0,
-      #000 calc(var(--gutter) * 0.45),
-      transparent calc(var(--gutter) + 1rem)
+      #000 calc(var(--gutter) * 0.6),
+      rgb(0 0 0 / 0.32) calc(var(--gutter) + 2rem),
+      rgb(0 0 0 / 0.32) calc(100% - var(--gutter) - 2rem),
+      #000 calc(100% - var(--gutter) * 0.6),
+      #000 100%
     );
   }
-  .bg-rail--left {
-    left: 0;
-  }
-  .bg-rail--right {
-    right: 0;
-    transform: scaleX(-1);
-  }
-  @media (min-width: 1280px) {
-    .bg-rail {
-      display: block;
-    }
-  }
 
-  .bg-rail :global(.ln) {
+  .bg-board :global(.ln) {
     fill: none;
     stroke: color-mix(in srgb, var(--foreground) 16%, transparent);
     stroke-width: 1;
   }
-  .bg-rail :global(.via) {
+  .bg-board :global(.via) {
     fill: var(--background);
     stroke: color-mix(in srgb, var(--foreground) 24%, transparent);
     stroke-width: 1;
   }
-  .bg-rail :global(.part) {
+  .bg-board :global(.part) {
     fill: color-mix(in srgb, var(--foreground) 5%, var(--background));
     stroke: color-mix(in srgb, var(--foreground) 16%, transparent);
     stroke-width: 1;
   }
-  .bg-rail :global(.dot) {
+  .bg-board :global(.dot) {
     fill: color-mix(in srgb, var(--foreground) 28%, transparent);
   }
-  .bg-rail :global(.sig) {
+  .bg-board :global(.sig) {
     fill: var(--signal);
   }
 

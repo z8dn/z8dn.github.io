@@ -806,3 +806,90 @@
   font-weight: 700;
   letter-spacing: -0.02em;
 }
+
+
+/* ---------- Stack: tools as chips on a board ---------- */
+.stack-board {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  margin-top: 0.625rem;
+}
+.stack-traces {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.stack-traces path {
+  fill: none;
+  stroke: color-mix(in srgb, var(--foreground) 22%, transparent);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+.stack-chips {
+  position: relative;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: repeat(3, 1fr);
+  gap: 8px 22px;
+}
+/* each tool is an IC package: a body with pin ticks down both sides */
+.stack-chip {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  min-width: 0;
+  border: 1px solid color-mix(in srgb, var(--foreground) 22%, transparent);
+  border-radius: 6px;
+  background: var(--surface);
+}
+.stack-chip::before,
+.stack-chip::after {
+  content: '';
+  position: absolute;
+  top: 22%;
+  bottom: 22%;
+  width: 4px;
+  background: repeating-linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--foreground) 35%, transparent) 0 1px,
+    transparent 1px 5px
+  );
+}
+.stack-chip::before {
+  right: 100%;
+}
+.stack-chip::after {
+  left: 100%;
+}
+.stack-chip svg {
+  width: 20px;
+  height: 20px;
+}
+.stack-chip span {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+/* half-width phone tile: logos only */
+@container (max-width: 220px) {
+  .stack-chips {
+    gap: 6px 16px;
+  }
+  .stack-chip span {
+    display: none;
+  }
+  .stack-chip svg {
+    width: 18px;
+    height: 18px;
+  }
+}

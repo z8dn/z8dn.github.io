@@ -3,7 +3,6 @@ import '@/styles/global.css'
 import '@/styles/typography.css'
 
 import BoardGround from '@/components/BoardGround.astro'
-import Footer from '@/components/Footer.astro'
 import Head from '@/components/Head.astro'
 import Header from '@/components/Header.astro'
 import { SITE } from '@/consts'
@@ -25,8 +24,8 @@ const { class: className } = Astro.props
     <slot name="head" />
   </Head>
   <body class="flex min-h-screen flex-col font-sans">
-    {/* reading pages get the board ground; the home page keeps its tiled one */}
-    {Astro.url.pathname !== '/' && <BoardGround />}
+    {/* the board ground on every page; faint behind the text on reading pages */}
+    <BoardGround soft={Astro.url.pathname !== '/'} />
     <header class="bg-background/90 sticky top-0 z-50 backdrop-blur-sm">
       <Header />
       <slot name="subposts-navigation" />
@@ -40,6 +39,5 @@ const { class: className } = Astro.props
     >
       <slot />
     </main>
-    <Footer />
   </body>
 </html>
