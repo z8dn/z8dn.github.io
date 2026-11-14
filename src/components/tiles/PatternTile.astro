@@ -1,0 +1,142 @@
+---
+// Gạch bông (Vietnamese encaustic cement tile) as an engraved line drawing:
+// hairline strokes, charging-coil rings, screws at the intersections.
+// Fills its parent; one motif on a 100x100 cell, repeated seamlessly.
+// Every shape that touches a cell edge is drawn whole and cut by the cell, so
+// the neighbouring repeat supplies the other part. The single red component
+// is NOT in the repeat: it sits once on the tile, off-centre.
+interface Props {
+  variant?: 'a' | 'b' | 'c'
+  /** Multiplier on the default 120px motif cell. */
+  scale?: number
+}
+const { variant = 'a', scale = 1 } = Astro.props
+const size = 120 * scale
+const id = `gb-${variant}-${crypto.randomUUID().slice(0, 8)}`
+
+const pts = (outer: number, inner: number, n = 8) =>
+  Array.from({ length: n * 2 }, (_, k) => {
+    const r = k % 2 === 0 ? outer : inner
+    const a = (Math.PI * k) / n - Math.PI / 2
+    return `${(50 + r * Math.cos(a)).toFixed(3)},${(50 + r * Math.sin(a)).toFixed(3)}`
+  }).join(' ')
+const star = pts(34, 15)
+const starSmall = pts(17, 7.5)
+const diamond = (cx: number, cy: number, r: number) =>
+  `${cx},${cy - r} ${cx + r},${cy} ${cx},${cy + r} ${cx - r},${cy}`
+const corners = [[0, 0], [100, 0], [0, 100], [100, 100]]
+const edges = [[50, 0], [50, 100], [0, 50], [100, 50]]
+const rings = (x: number, y: number, rs: number[]) => rs.map((r) => ({ x, y, r }))
+const redAt = variant === 'b' ? { x: '28%', y: '70%' } : { x: '71%', y: '27%' }
+---
+
+<svg
+  class="gb"
+  width="100%"
+  height="100%"
+  preserveAspectRatio="xMidYMid slice"
+  aria-hidden="true"
+  focusable="false"
+>
+  <defs>
+    <pattern
+      id={id}
+      width={size}
+      height={size}
+      viewBox="0 0 100 100"
+      patternUnits="userSpaceOnUse"
+      x="50%"
+      y="50%"
+    >
+      <rect width="100" height="100" class="ground"></rect>
+      {/* motif is drawn 4x, wrapped by half a cell, so its centre sits on the tile centre */}
+      {[[-50, -50], [50, -50], [-50, 50], [50, 50]].map(([dx, dy]) => (
+        <use href={`#${id}-m`} transform={`translate(${dx} ${dy})`} />
+      ))}
+    </pattern>
+    <clipPath id={`${id}-c`}><rect width="100" height="100"></rect></clipPath>
+    <g id={`${id}-s`} class="screw">
+      <circle r="2.6"></circle>
+      <path d="M-1.6 0H1.6"></path>
+    </g>
+    <g id={`${id}-m`} clip-path={`url(#${id}-c)`}>
+      {variant === 'a' && (
+        <>
+          {corners.flatMap(([x, y]) => rings(x, y, [25, 21.5, 18, 14.5, 11])).map(({ x, y, r }) => (
+            <circle cx={x} cy={y} r={r} class={r === 25 ? 'line' : 'fine'} />
+          ))}
+          {edges.map(([x, y]) => <polygon points={diamond(x, y, 9)} class="line" />)}
+          {edges.map(([x, y]) => <polygon points={diamond(x, y, 4.5)} class="fine" />)}
+          <polygon points={star} class="line part"></polygon>
+          <polygon points={starSmall} class="fine"></polygon>
+          <circle cx="50" cy="50" r="34" class="fine"></circle>
+          <use href={`#${id}-s`} x="50" y="50" />
+          {corners.map(([x, y]) => <use href={`#${id}-s`} x={x} y={y} />)}
+        </>
+      )}
+      {variant === 'b' && (
+        <>
+          {[[50, 30], [70, 50], [50, 70], [30, 50]].flatMap(([x, y]) => rings(x, y, [20, 16, 12])).map(({ x, y, r }) => (
+            <circle cx={x} cy={y} r={r} class={r === 20 ? 'line' : 'fine'} />
+          ))}
+          {[0, 90, 180, 270].map((r) => (
+            <path d="M50 50 Q34 32 50 12 Q66 32 50 50Z" transform={`rotate(${r} 50 50)`} class="line part" />
+          ))}
+          {corners.map(([x, y]) => <polygon points={diamond(x, y, 9)} class="line" />)}
+          {corners.map(([x, y]) => <polygon points={diamond(x, y, 4.5)} class="fine" />)}
+          <rect x="0" y="0" width="100" height="100" class="fine"></rect>
+          <polygon points={diamond(50, 50, 8)} class="line part"></polygon>
+          <use href={`#${id}-s`} x="50" y="50" />
+          {corners.map(([x, y]) => <use href={`#${id}-s`} x={x} y={y} />)}
+        </>
+      )}
+      {variant === 'c' && (
+        <>
+          {corners.flatMap(([x, y]) => rings(x, y, [50, 44, 38, 33, 28, 23])).map(({ x, y, r }) => (
+            <circle cx={x} cy={y} r={r} class={r === 50 || r === 33 ? 'line' : 'fine'} />
+          ))}
+          {[[0, 0], [100, 100]].map(([x, y]) => <circle cx={x} cy={y} r="9" class="line part" />)}
+          <polygon points={diamond(50, 50, 7)} class="line"></polygon>
+          <use href={`#${id}-s`} x="50" y="50" />
+          {[[0, 0], [100, 100]].map(([x, y]) => <use href={`#${id}-s`} x={x} y={y} />)}
+        </>
+      )}
+    </g>
+  </defs>
+  <rect width="100%" height="100%" fill={`url(#${id})`}></rect>
+  {/* the one red component, mounted off-centre on a hairline pad */}
+  <g class="mount" style={`transform: translate(${redAt.x}, ${redAt.y})`}>
+    <rect x="-9" y="-9" width="18" height="18" rx="4" class="pad"></rect>
+    <rect x="-3.5" y="-3.5" width="7" height="7" rx="1" class="signal"></rect>
+  </g>
+</svg>
+
+<style>
+  .gb {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+  .ground { fill: var(--tile, var(--background)); }
+  .line,
+  .fine,
+  .screw circle,
+  .screw path {
+    fill: none;
+    stroke: var(--muted-foreground);
+    stroke-width: 0.85;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .line { stroke-opacity: 0.6; }
+  .fine { stroke: var(--border); stroke-width: 0.7; }
+  .part { fill: var(--surface); }
+  .screw circle { fill: var(--tile, var(--background)); stroke-opacity: 0.8; }
+  .screw path { stroke-opacity: 0.8; stroke-width: 0.6; }
+  .pad {
+    fill: var(--tile, var(--background));
+    stroke: var(--border);
+    stroke-width: 1;
+  }
+  .signal { fill: var(--signal); }
+</style>

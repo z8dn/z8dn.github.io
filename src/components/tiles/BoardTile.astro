@@ -1,0 +1,316 @@
+---
+// Exposed-hardware tile. Two original compositions, each a crop of a larger
+// machine (never a repeat): "panel" is a transparent-back style assembly of flat
+// plates, a charging coil, a serpentine flex ribbon and screws; "board" is a
+// mainboard crop with a chip, parallel trace bundles, vias, SMD parts and
+// silkscreen. Fills its parent, fully static. Colours come from the theme
+// variables (with literal fallbacks); the single red part is --signal.
+interface Props {
+  variant?: 'panel' | 'board'
+}
+const { variant = 'panel' } = Astro.props
+const uid = `bt-${variant}-${Math.random().toString(36).slice(2, 8)}`
+
+const r2 = (n: number) => Math.round(n * 100) / 100
+
+type Pt = [number, number]
+/** n parallel lanes (equal pitch) around a centreline polyline, mitred at every bend. */
+const lanes = (pts: Pt[], n: number, pitch = 4) => {
+  const segs = pts.slice(1).map((p, i) => {
+    const [x0, y0] = pts[i]
+    const l = Math.hypot(p[0] - x0, p[1] - y0)
+    const u: Pt = [(p[0] - x0) / l, (p[1] - y0) / l]
+    return { u, n: [u[1], -u[0]] as Pt }
+  })
+  return Array.from({ length: n }, (_, k) => {
+    const d = (k - (n - 1) / 2) * pitch
+    const out = pts.map((p, j) => {
+      const a = segs[j - 1]
+      const b = segs[j]
+      let nx: number
+      let ny: number
+      if (!a || !b) {
+        const s = a ?? b
+        nx = s.n[0] * d
+        ny = s.n[1] * d
+      } else {
+        const dot = a.n[0] * b.n[0] + a.n[1] * b.n[1]
+        nx = ((a.n[0] + b.n[0]) / (1 + dot)) * d
+        ny = ((a.n[1] + b.n[1]) / (1 + dot)) * d
+      }
+      return [r2(p[0] + nx), r2(p[1] + ny)] as Pt
+    })
+    return {
+      d: out.map((p, j) => `${j ? 'L' : 'M'}${p[0]} ${p[1]}`).join(' '),
+      end: out[out.length - 1],
+    }
+  })
+}
+
+// ---------- panel ----------
+const screws: [number, number, number][] = [
+  [16, 16, 20], [16, 108, 70], [164, 84, 110], [244, 84, 160],
+  [112, 136, 35], [244, 160, 130], [16, 136, 90],
+]
+const slot = (x: number, y: number, a: number) => {
+  const c = Math.cos((a * Math.PI) / 180) * 2
+  const s = Math.sin((a * Math.PI) / 180) * 2
+  return `M${r2(x - c)} ${r2(y - s)}L${r2(x + c)} ${r2(y + s)}`
+}
+const coilR = Array.from({ length: 12 }, (_, i) => 70 - i * 5)
+
+// ---------- board ----------
+const pinsAlong = Array.from({ length: 13 }, (_, k) => 112 + k * 4)
+const bundles = [
+  { pts: [[116, 104], [116, 72], [92, 48], [92, 28]] as Pt[], n: 3, via: [0, 6] },
+  { pts: [[168, 118], [200, 118], [216, 134], [290, 134]] as Pt[], n: 4, via: null },
+  { pts: [[168, 148], [184, 148], [224, 188], [224, 290]] as Pt[], n: 3, via: null },
+  { pts: [[122, 168], [122, 196], [98, 220], [98, 290]] as Pt[], n: 4, via: null },
+  { pts: [[104, 140], [76, 140], [52, 116], [28, 116]] as Pt[], n: 3, via: [6, 0] },
+  { pts: [[232, 62], [290, 62]] as Pt[], n: 2, via: null },
+].map((b) => ({
+  ...b,
+  lanes: lanes(b.pts, b.n).map((l, k) => {
+    if (!b.via) return l
+    // stagger the vias so their rings never touch
+    const e: Pt = [r2(l.end[0] + b.via[0] * k), r2(l.end[1] + b.via[1] * k)]
+    return { d: l.d.replace(/L[^L]*$/, `L${e[0]} ${e[1]}`), end: e }
+  }),
+}))
+const smd = Array.from({ length: 6 }, (_, k) => 136 + k * 12)
+const padsX = Array.from({ length: 6 }, (_, k) => 28 + k * 8)
+const testPts: Pt[] = [[56, 64], [56, 80], [140, 44], [172, 44], [244, 100], [244, 116]]
+---
+
+<svg
+  class="bt"
+  width="100%"
+  height="100%"
+  viewBox="0 0 280 280"
+  preserveAspectRatio="xMidYMid slice"
+  aria-hidden="true"
+  focusable="false"
+>
+  {
+    variant === 'panel' ? (
+      <>
+        <defs>
+          <clipPath id={`${uid}-p1`}>
+            <rect x="-4" y="-4" width="156" height="128" />
+          </clipPath>
+        </defs>
+        <rect class="gr" x="-4" y="-4" width="288" height="288" />
+        {/* plates */}
+        <path class="pa seam" vector-effect="non-scaling-stroke" d="M-4 -4H152V124H-4Z" />
+        <path class="pb seam" vector-effect="non-scaling-stroke" d="M152 -4H256V96H152Z" />
+        <path class="pa seam" vector-effect="non-scaling-stroke" d="M152 96H256V172H100V124H152Z" />
+        <path class="pb seam" vector-effect="non-scaling-stroke" d="M-4 124H100V284H-4Z" />
+        <path class="pb seam" vector-effect="non-scaling-stroke" d="M100 172H256V284H100Z" />
+        <path class="pa seam" vector-effect="non-scaling-stroke" d="M256 -4H284V284H256Z" />
+        {/* coil, cut by the plate edges */}
+        <g clip-path={`url(#${uid}-p1)`}>
+          {coilR.map((r, i) => (
+            <circle class={i === 0 ? 'dk' : 'ln'} vector-effect="non-scaling-stroke" cx="100" cy="68" r={r} />
+          ))}
+          <circle class="dk fg" vector-effect="non-scaling-stroke" cx="100" cy="68" r="8" />
+          <circle class="fk" cx="100" cy="68" r="2" />
+        </g>
+        {/* tabs */}
+        <path class="pb ln" vector-effect="non-scaling-stroke" d="M180 96V88H196V96" />
+        <path class="pas" d="M181 96H195" />
+        <path class="pb ln" vector-effect="non-scaling-stroke" d="M100 148H108V164H100" />
+        <path class="pbs" d="M100 149V163" />
+        <path class="pa ln" vector-effect="non-scaling-stroke" d="M256 128H248V144H256" />
+        <path class="pas" d="M256 129V143" />
+        {/* shield can */}
+        <rect class="pb dk" vector-effect="non-scaling-stroke" x="168" y="108" width="60" height="48" rx="4" />
+        <rect class="ln" vector-effect="non-scaling-stroke" x="172" y="112" width="52" height="40" rx="2" />
+        <text class="tx" x="176" y="124">Z8-01</text>
+        {/* ribbon */}
+        <path class="rb" d="M-10 187H168A41 41 0 0 1 168 269H90A7 7 0 0 0 83 276V300H49V276A41 41 0 0 1 90 235H168A7 7 0 0 0 168 221H-10Z" />
+        <path class="dk" vector-effect="non-scaling-stroke" d="M-10 187H168A41 41 0 0 1 168 269H90A7 7 0 0 0 83 276V300" />
+        <path class="dk" vector-effect="non-scaling-stroke" d="M-10 221H168A7 7 0 0 1 168 235H90A41 41 0 0 0 49 276V300" />
+        <rect class="pa dk" vector-effect="non-scaling-stroke" x="36" y="194" width="40" height="20" rx="3" />
+        <path class="ln" vector-effect="non-scaling-stroke" d="M44 200H68M44 204H68M44 208H68" />
+        {/* ports */}
+        <circle class="fg dk" vector-effect="non-scaling-stroke" cx="204" cy="40" r="7" />
+        <circle class="ln" vector-effect="non-scaling-stroke" cx="204" cy="40" r="3.5" />
+        <circle class="fg dk" vector-effect="non-scaling-stroke" cx="60" cy="152" r="7" />
+        <circle class="ln" vector-effect="non-scaling-stroke" cx="60" cy="152" r="3.5" />
+        <text class="tx" x="196" y="58">J1</text>
+        <text class="tx" x="54" y="170">J2</text>
+        {/* screws */}
+        {screws.map(([x, y, a]) => (
+          <>
+            <circle class="fg dk" vector-effect="non-scaling-stroke" cx={x} cy={y} r="3.2" />
+            <path class="dk" vector-effect="non-scaling-stroke" d={slot(x, y, a)} />
+          </>
+        ))}
+        {/* engraved strip */}
+        <text class="tx" transform="translate(272 262) rotate(-90)" textLength="232" lengthAdjust="spacing">
+          Z8DN · MODEL Z8-01 · HO CHI MINH CITY · UTC+7 · ASSEMBLED WITH KOTLIN
+        </text>
+        {/* the one red part, on a seam */}
+        <rect class="sg" x="228" y="92" width="8" height="8" rx="1" />
+      </>
+    ) : (
+      <>
+        <rect class="pb" x="-4" y="-4" width="288" height="288" />
+        <path class="pa seam" vector-effect="non-scaling-stroke" d="M188 -4H284V84H196A8 8 0 0 1 188 76Z" />
+        {/* traces */}
+        {bundles.map((b) =>
+          b.lanes.map((l) => (
+            <>
+              <path class="dk tr" vector-effect="non-scaling-stroke" d={l.d} />
+              {b.via && <circle class="fg dk" vector-effect="non-scaling-stroke" cx={l.end[0]} cy={l.end[1]} r="2.2" />}
+            </>
+          )),
+        )}
+        {/* main chip */}
+        <rect class="pa dk" vector-effect="non-scaling-stroke" x="104" y="104" width="64" height="64" rx="4" />
+        <rect class="ln" vector-effect="non-scaling-stroke" x="108" y="108" width="56" height="56" rx="2" />
+        <circle class="fk" cx="114" cy="114" r="1.5" />
+        <text class="chip" x="136" y="137" text-anchor="middle" dominant-baseline="central">Z8</text>
+        {pinsAlong.map((p) => (
+          <path
+            class="dk"
+            vector-effect="non-scaling-stroke"
+            d={`M${p} 99V104M${p} 168V173M99 ${p}H104M168 ${p}H173`}
+          />
+        ))}
+        {/* second chip */}
+        <rect class="pa dk" vector-effect="non-scaling-stroke" x="204" y="52" width="28" height="20" rx="2" />
+        {[208, 212, 216, 220, 224, 228].map((p) => (
+          <path class="dk" vector-effect="non-scaling-stroke" d={`M${p} 49V52M${p} 72V75`} />
+        ))}
+        {[56, 60, 64, 68].map((p) => (
+          <path class="dk" vector-effect="non-scaling-stroke" d={`M201 ${p}H204`} />
+        ))}
+        <text class="tx" x="204" y="46">U2</text>
+        {/* SMD row */}
+        {smd.map((x) => (
+          <rect class="pa dk" vector-effect="non-scaling-stroke" x={x} y="236" width="5" height="3" rx="0.8" />
+        ))}
+        <text class="tx" x="136" y="248">C12</text>
+        <text class="tx" x="172" y="248">R7</text>
+        {/* connector pads */}
+        {[236, 244].map((y) =>
+          padsX.map((x) => (
+            <rect class="pa dk" vector-effect="non-scaling-stroke" x={x} y={y} width="5" height="5" rx="0.8" />
+          )),
+        )}
+        <rect class="ln" vector-effect="non-scaling-stroke" x="24" y="232" width="53" height="21" rx="2" />
+        <text class="tx" x="28" y="228">J2</text>
+        {/* test points */}
+        {testPts.map(([x, y]) => (
+          <>
+            <circle class="dk" vector-effect="non-scaling-stroke" cx={x} cy={y} r="3.2" />
+            <circle class="fk" cx={x} cy={y} r="1.5" />
+          </>
+        ))}
+        <text class="tx" x="62" y="65.5">TP1</text>
+        <text class="tx" x="146" y="45.5">TP3</text>
+        <text class="tx" x="100" y="178">U1</text>
+        {/* mounting holes */}
+        <circle class="dk" vector-effect="non-scaling-stroke" cx="28" cy="28" r="6" />
+        <circle class="fg ln" vector-effect="non-scaling-stroke" cx="28" cy="28" r="3" />
+        <circle class="dk" vector-effect="non-scaling-stroke" cx="252" cy="252" r="6" />
+        <circle class="fg ln" vector-effect="non-scaling-stroke" cx="252" cy="252" r="3" />
+        {/* the one red part */}
+        <rect class="sg" x="176" y="88" width="8" height="8" rx="1" />
+        <text class="tx" x="188" y="95">D3</text>
+      </>
+    )
+  }
+</svg>
+
+<style>
+  .bt {
+    display: block;
+    overflow: hidden;
+    --bt-ground: var(--tile, #f6f6f6);
+    --bt-a: var(--surface, #e2e2e2);
+    --bt-b: color-mix(in srgb, var(--foreground, #0c0c0c) 4%, var(--tile, #f6f6f6));
+    --bt-line: var(--border, #cfcfcf);
+    --bt-dark: color-mix(in srgb, var(--foreground, #0c0c0c) 28%, transparent);
+    --bt-ink: color-mix(in srgb, var(--foreground, #0c0c0c) 55%, transparent);
+    --bt-ribbon: color-mix(in srgb, var(--foreground, #0c0c0c) 2%, var(--tile, #f6f6f6));
+  }
+  .bt * {
+    stroke-width: 0.75;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+  }
+  .gr,
+  .fg {
+    fill: var(--bt-ground);
+  }
+  .pa {
+    fill: var(--bt-a);
+  }
+  .pb {
+    fill: var(--bt-b);
+  }
+  .rb {
+    fill: var(--bt-ribbon);
+    stroke: none;
+  }
+  .fk {
+    fill: var(--bt-dark);
+    stroke: none;
+  }
+  .ln {
+    stroke: var(--bt-line);
+  }
+  .dk {
+    stroke: var(--bt-dark);
+  }
+  .ln:not(.pa):not(.pb) {
+    fill: none;
+  }
+  .dk:not(.pa):not(.pb):not(.fg) {
+    fill: none;
+  }
+  .pa.ln,
+  .pb.ln {
+    stroke: var(--bt-line);
+  }
+  .seam {
+    stroke: var(--bt-line);
+    stroke-width: 1;
+  }
+  .pbs,
+  .pas {
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: butt;
+  }
+  .pbs {
+    stroke: var(--bt-b);
+  }
+  .pas {
+    stroke: var(--bt-a);
+  }
+  .tr {
+    fill: none;
+  }
+  .sg {
+    fill: var(--signal, #d71921);
+    stroke: none;
+  }
+  .tx {
+    font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+    font-size: 5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    fill: var(--bt-ink);
+    stroke: none;
+  }
+  .chip {
+    font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+    font-size: 11px;
+    font-weight: 700;
+    fill: var(--bt-ink);
+    stroke: none;
+  }
+</style>

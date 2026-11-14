@@ -2,11 +2,10 @@
 import '@/styles/global.css'
 import '@/styles/typography.css'
 
-import BootScreen from '@/components/BootScreen.astro'
+import BoardGround from '@/components/BoardGround.astro'
 import Footer from '@/components/Footer.astro'
 import Head from '@/components/Head.astro'
 import Header from '@/components/Header.astro'
-import PixelFx from '@/components/PixelFx.astro'
 import { SITE } from '@/consts'
 import { cn } from '@/lib/utils'
 
@@ -25,21 +24,22 @@ const { class: className } = Astro.props
   <Head>
     <slot name="head" />
   </Head>
-  <body class="flex h-fit min-h-screen flex-col gap-y-6 font-sans">
-    <BootScreen />
-    <header
-      class="bg-background/50 sticky top-0 z-50 divide-y backdrop-blur-sm xl:divide-none"
-    >
+  <body class="flex min-h-screen flex-col font-sans">
+    {/* reading pages get the board ground; the home page keeps its tiled one */}
+    {Astro.url.pathname !== '/' && <BoardGround />}
+    <header class="bg-background/90 sticky top-0 z-50 backdrop-blur-sm">
       <Header />
       <slot name="subposts-navigation" />
       <slot name="table-of-contents" />
     </header>
     <main
-      class={cn('w-full mx-auto flex grow flex-col gap-y-6 px-4', className)}
+      class={cn(
+        'mx-auto flex w-full max-w-[72rem] grow flex-col gap-y-8 px-5 pt-8 pb-16 sm:px-8 sm:pt-12 sm:pb-24',
+        className,
+      )}
     >
       <slot />
     </main>
     <Footer />
-    <PixelFx />
   </body>
 </html>

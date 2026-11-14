@@ -1,0 +1,192 @@
+/* Phone demo: selfie capture and registration in a generic banking app, in the exposed-hardware look (monochrome plus one red). Scoped to .pd. */
+
+.pd .ss-stage {
+  --ss-font: -apple-system, 'SF Pro Text', system-ui, 'PingFang SC', 'Noto Sans SC', sans-serif;
+  --ss-canvas: #f6f6f6;
+  --ss-surface: #f6f6f6;
+  --ss-chrome: #e2e2e2;
+  --ss-ink-1: rgba(12, 12, 12, 0.04);
+  --ss-ink-2: rgba(12, 12, 12, 0.06);
+  --ss-ink-3: rgba(12, 12, 12, 0.09);
+  --ss-ink-4: #cfcfcf;
+  --ss-ink-5: #cfcfcf;
+  --ss-fill: #e2e2e2;
+  --ss-line: #cfcfcf;
+  --ss-line-faint: #cfcfcf;
+  --ss-text-strong: #0c0c0c;
+  --ss-text: #5c5c5c;
+  --ss-text-faint: #5c5c5c;
+  --ss-icon: #5c5c5c;
+  --ss-accent: #0c0c0c;
+  --ss-accent-2: #0c0c0c;
+  --ss-accent-soft: #e2e2e2;
+  --ss-accent-text: #0c0c0c;
+  --ss-success: #0c0c0c;
+  --pd-red: #d71921;
+  --pd-component: #e2e2e2;
+  --pd-hair: #cfcfcf;
+  --pd-tile: #f6f6f6;
+  --pd-head: #8c8c8c;
+  --pd-body: #6a6a6a;
+  overflow: hidden;
+  background: transparent;
+}
+
+.pd .ss-stage[data-theme='dark'] {
+  --ss-canvas: #0d0d0d;
+  --ss-surface: #0d0d0d;
+  --ss-chrome: #1a1a1a;
+  --ss-ink-1: rgba(242, 242, 242, 0.05);
+  --ss-ink-2: rgba(242, 242, 242, 0.07);
+  --ss-ink-3: rgba(242, 242, 242, 0.1);
+  --ss-ink-4: #2b2b2b;
+  --ss-ink-5: #2b2b2b;
+  --ss-fill: #1a1a1a;
+  --ss-line: #2b2b2b;
+  --ss-line-faint: #2b2b2b;
+  --ss-text-strong: #f2f2f2;
+  --ss-text: #9a9a9a;
+  --ss-text-faint: #9a9a9a;
+  --ss-icon: #9a9a9a;
+  --ss-accent: #f2f2f2;
+  --ss-accent-2: #f2f2f2;
+  --ss-accent-soft: #1a1a1a;
+  --ss-accent-text: #f2f2f2;
+  --ss-success: #f2f2f2;
+  --pd-red: #e5332a;
+  --pd-component: #1a1a1a;
+  --pd-hair: #2b2b2b;
+  --pd-tile: #0d0d0d;
+}
+
+/* The phone hangs from the top and runs off the bottom; the position is set per layout in the component */
+.pd .pd-phone {
+  position: absolute;
+  box-shadow: 0 0 0 1px #5a5a5a, 0 0 0 2px var(--pd-hair);
+  border-radius: 40px;
+}
+
+/* ---- Camera ---- */
+
+.pd .pd-cam {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: #111;
+  color: #fff;
+  --ss-success: var(--pd-red);
+}
+
+.pd .pd-scene {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.pd .pd-steps {
+  position: absolute;
+  top: 84px;
+  display: flex;
+  gap: 8px;
+}
+
+.pd .pd-steps i {
+  flex: 1;
+  height: 5px;
+  border-radius: 2.5px;
+  background: #fff;
+}
+
+.pd .pd-badge {
+  position: absolute;
+  display: grid;
+  width: 46px;
+  height: 46px;
+  place-items: center;
+  border-radius: 50%;
+  background: #111;
+  box-shadow: 0 0 0 5px #111;
+  transform: translate(-50%, -50%);
+}
+
+.pd .pd-badge .ss-check__tick {
+  stroke: #fff;
+  stroke-width: 2;
+}
+
+.pd .pd-chip {
+  position: absolute;
+  padding: 11px 24px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.1);
+  font-size: 21px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  transform: translate(-50%, -50%);
+}
+
+/* ---- Satellite: straddles the phone's right edge, low ---- */
+
+.pd .pd-card {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px 9px 9px;
+  border: 1px solid var(--pd-hair);
+  border-radius: 10px;
+  background: var(--pd-component);
+  color: var(--ss-text-strong);
+}
+
+.pd .pd-card[data-layout='compact'] {
+  right: 6px;
+  top: 379px;
+}
+
+.pd .pd-card:not([data-layout='compact']) {
+  right: 18px;
+  top: 362px;
+}
+
+.pd .pd-card__text {
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -0.005em;
+  white-space: nowrap;
+}
+
+.pd .pd-avatar {
+  position: relative;
+  display: block;
+  flex: none;
+  width: 28px;
+  height: 28px;
+}
+
+.pd .pd-avatar svg {
+  display: block;
+  overflow: hidden;
+  border-radius: 50%;
+  background: var(--ss-ink-3);
+}
+
+.pd .pd-avatar__mark {
+  position: absolute;
+  right: -3px;
+  bottom: -3px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px var(--pd-component);
+}
+
+.pd .pd-avatar__mark {
+  --ss-success: var(--ss-text-strong);
+}
+
+.pd .pd-avatar__mark .ss-check__tick {
+  stroke: var(--pd-component);
+}

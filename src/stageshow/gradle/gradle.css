@@ -1,0 +1,255 @@
+/* Gradle demo: exposed-hardware look (monochrome plus one red). Scoped to .gd. The page is the ground. */
+
+.gd .ss-stage {
+  --ss-font: 'Be Vietnam Pro', system-ui, -apple-system, 'PingFang SC', 'Noto Sans SC', sans-serif;
+  --ss-mono: 'JetBrains Mono Variable', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --gd-dot: 'JetBrains Mono Variable', ui-monospace, monospace;
+  --ss-canvas: #f6f6f6;
+  --ss-surface: #f6f6f6;
+  --ss-chrome: #e2e2e2;
+  --ss-raised: #f6f6f6;
+  --ss-ink-1: #e2e2e2;
+  --ss-ink-2: rgba(12, 12, 12, 0.06);
+  --ss-ink-3: rgba(12, 12, 12, 0.09);
+  --ss-ink-4: #cfcfcf;
+  --ss-ink-5: #cfcfcf;
+  --ss-fill: #e2e2e2;
+  --ss-line: #cfcfcf;
+  --ss-line-faint: #cfcfcf;
+  --ss-text-strong: #0c0c0c;
+  --ss-text: #5c5c5c;
+  --ss-text-faint: #5c5c5c;
+  --ss-icon: #5c5c5c;
+  --ss-icon-faint: #cfcfcf;
+  --ss-accent: #0c0c0c;
+  --ss-accent-2: #0c0c0c;
+  --ss-accent-soft: transparent;
+  --ss-accent-text: #d71921;
+  --ss-success: #0c0c0c;
+  --ss-success-soft: transparent;
+  --ss-success-text: #0c0c0c;
+  --gd-red: #d71921;
+  --gd-tile: #f6f6f6;
+  --ss-shadow-window: 0 0 0 1px #cfcfcf;
+  --ss-radius-window: 10px;
+  overflow: hidden;
+  background: transparent;
+}
+
+.gd .ss-stage[data-theme='dark'] {
+  --ss-canvas: #0d0d0d;
+  --ss-surface: #0d0d0d;
+  --ss-chrome: #1a1a1a;
+  --ss-raised: #0d0d0d;
+  --ss-ink-1: #1a1a1a;
+  --ss-ink-2: rgba(242, 242, 242, 0.07);
+  --ss-ink-3: rgba(242, 242, 242, 0.1);
+  --ss-ink-4: #2b2b2b;
+  --ss-ink-5: #2b2b2b;
+  --ss-fill: #1a1a1a;
+  --ss-line: #2b2b2b;
+  --ss-line-faint: #2b2b2b;
+  --ss-text-strong: #f2f2f2;
+  --ss-text: #9a9a9a;
+  --ss-text-faint: #9a9a9a;
+  --ss-icon: #9a9a9a;
+  --ss-icon-faint: #2b2b2b;
+  --ss-accent: #f2f2f2;
+  --ss-accent-2: #f2f2f2;
+  --ss-accent-text: #e5332a;
+  --ss-success: #f2f2f2;
+  --ss-success-text: #f2f2f2;
+  --gd-red: #e5332a;
+  --gd-tile: #0d0d0d;
+  --ss-shadow-window: 0 0 0 1px #2b2b2b;
+}
+
+/* ---- The panel: hung from the top-left corner, cut by the tile at the bottom (and the right, when wide) ---- */
+
+.gd .gd-panel {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  width: 300px;
+  height: 300px;
+  padding: 16px 16px 0;
+  border: 1px solid var(--ss-line);
+  border-radius: 10px;
+  background: var(--ss-chrome);
+}
+
+.gd .gd-label {
+  display: block;
+  font-family: var(--gd-dot);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 16px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ss-text);
+}
+
+.gd .gd-hero {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 56px;
+  margin-top: 4px;
+}
+
+.gd .gd-time {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  font-family: var(--gd-dot);
+  font-size: 56px;
+  line-height: 56px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ss-text-strong);
+}
+
+.gd .gd-unit {
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: 0;
+  color: var(--ss-text);
+}
+
+.gd .gd-delta {
+  font-family: var(--gd-dot);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  height: 22px;
+  padding: 0 9px;
+  border: 1px solid var(--gd-red);
+  background: transparent;
+  color: var(--gd-red);
+}
+
+.gd .gd-was {
+  font-family: var(--ss-mono);
+  font-size: 11px;
+  line-height: 16px;
+  color: var(--ss-text);
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+}
+
+.gd .gd-side {
+  display: grid;
+  gap: 4px;
+  justify-items: start;
+}
+
+.gd .gd-reused {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 18px;
+  margin-top: 10px;
+  font-family: var(--ss-mono);
+  font-size: 11.5px;
+  color: var(--ss-text-strong);
+  white-space: nowrap;
+}
+
+.gd .gd-reused .ss-check {
+  --ss-success: var(--ss-text-strong);
+}
+
+.gd .gd-rule {
+  height: 1px;
+  margin: 12px 0 4px;
+  background: var(--ss-line);
+}
+
+.gd .gd-row {
+  display: grid;
+  grid-template-columns: 64px 84px 14px;
+  align-items: center;
+  column-gap: 10px;
+  height: 28px;
+}
+
+.gd .gd-meter {
+  height: 5px;
+  border-radius: 2.5px;
+  border: 1px solid var(--ss-line);
+  background: transparent;
+  box-sizing: border-box;
+}
+
+.gd .gd-meter .ss-meter__fill {
+  background: var(--ss-text-strong);
+  background-image: none;
+}
+
+.gd .gd-meter .ss-meter__fill::after {
+  display: none;
+}
+
+.gd .ss-check__tick {
+  stroke: var(--gd-tile);
+}
+
+/* ---- Compact: only the label, the figure, the badge and the old time ---- */
+
+.gd .gd-panel:not([data-wide]) {
+  top: 10px;
+  left: 10px;
+  width: 190px;
+  height: 160px;
+  padding: 10px 12px 0;
+}
+
+.gd .gd-panel:not([data-wide]) .gd-time {
+  font-size: 42px;
+  line-height: 42px;
+  margin-top: 2px;
+}
+
+.gd .gd-panel:not([data-wide]) .gd-unit {
+  font-size: 20px;
+}
+
+.gd .gd-panel:not([data-wide]) .gd-label {
+  font-size: 11px;
+  line-height: 14px;
+}
+
+.gd .gd-pair {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.gd .gd-panel:not([data-wide]) .gd-delta {
+  font-size: 12px;
+  height: 20px;
+  padding: 0 8px;
+}
+
+/* Module rows as hairline bars with a small round tick at the start */
+.gd .gd-row > .ss-bar {
+  position: relative;
+  height: 8px !important;
+  border: 1px solid var(--ss-line);
+  border-radius: 4px !important;
+  background: transparent !important;
+  box-sizing: border-box;
+}
+
+.gd .gd-row > .ss-bar::before {
+  content: '';
+  position: absolute;
+  left: 1px;
+  top: 1px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--ss-text);
+}

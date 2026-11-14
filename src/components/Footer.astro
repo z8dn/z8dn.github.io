@@ -1,22 +1,36 @@
 ---
-import { Separator } from '@/components/ui/separator'
+import { SOCIAL_LINKS } from '@/consts'
 import Link from './Link.astro'
-import { Icon } from 'astro-icon/components'
 ---
 
-<footer
-  class="mx-auto mb-8 flex w-full max-w-3xl items-center justify-center gap-x-2 px-4 sm:mb-4"
->
-  <span class="text-muted-foreground font-pixel text-[0.5rem]">
-    &copy; {new Date().getFullYear()} z8dn
-  </span>
-  <Separator orientation="vertical" className="hidden h-4! sm:block" />
-  <p class="text-muted-foreground text-xs">
-    Made with <a href="https://claude.ai" target="_blank" rel="noopener noreferrer" aria-label="Claude" class="inline-flex items-center align-middle mx-0.5 text-muted-foreground hover:text-foreground transition-colors"><Icon name="simple-icons:claude" class="size-[0.85rem]" /></a> by <Link
-      href="https://github.com/z8dn"
-      class="text-foreground"
-      external
-      underline>z8dn</Link
-    >
-  </p>
+<footer class="border-border border-t">
+  <div
+    class="mx-auto flex w-full max-w-[72rem] flex-col gap-6 px-5 py-10 sm:flex-row sm:items-center sm:justify-between sm:px-8"
+  >
+    <div class="flex items-center gap-3">
+      <span class="seal" aria-hidden="true">z8</span>
+      <p class="text-muted-foreground text-sm">Zayden · Ho Chi Minh City</p>
+    </div>
+    <nav aria-label="Social">
+      <ul class="flex flex-wrap items-center gap-x-5 gap-y-2" role="list">
+        {
+          SOCIAL_LINKS.map(({ href, label }) => (
+            <li>
+              <Link
+                href={href}
+                external={!href.startsWith('/') && !href.startsWith('mailto:')}
+                rel={href.startsWith('http') ? 'noopener noreferrer' : undefined}
+                class="text-muted-foreground hover:text-foreground text-sm underline decoration-transparent underline-offset-4 hover:decoration-current"
+              >
+                {label}
+              </Link>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+    <p class="dot text-muted-foreground text-[0.75rem]">
+      &copy; {new Date().getFullYear()}
+    </p>
+  </div>
 </footer>

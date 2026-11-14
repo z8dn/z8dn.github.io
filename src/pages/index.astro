@@ -1,523 +1,538 @@
 ---
-import Link from '@/components/Link.astro'
-import PageHead from '@/components/PageHead.astro'
-import { buttonVariants } from '@/components/ui/button'
-import Layout from '@/layouts/Layout.astro'
 import { Icon } from 'astro-icon/components'
-import { getRecentPosts } from '@/lib/data-utils'
+import PageHead from '@/components/PageHead.astro'
+import BoardTile from '@/components/tiles/BoardTile.astro'
+import Layout from '@/layouts/Layout.astro'
+import { getAllPosts, getRecentPosts } from '@/lib/data-utils'
+import { SOCIAL_LINKS } from '@/consts'
+import GradleDemo from '@/stageshow/gradle/GradleDemo'
+import PhoneDemo from '@/stageshow/phone/PhoneDemo'
+import '@/styles/bento.css'
 
-// Latest blog post
-const latestPost = (await getRecentPosts(1))[0] ?? null
+const [latest] = await getRecentPosts(1)
+const allPosts = await getAllPosts()
+const gradlePost =
+  allPosts.find((p) => p.id === 'gradle-internals') ??
+  allPosts.find((p) => p.data.tags?.includes('gradle')) ??
+  null
 
-// Featured project — live star count from GitHub API
-interface FeaturedProject {
-  name: string; description: string; stars: number; language: string; url: string; homepage: string
-}
-let featuredProject: FeaturedProject = {
-  name: 'advanced-android-project-view',
-  description: 'Enhances Android Studio project view with quick access to commonly used directories and files.',
-  stars: 4,
-  language: 'Kotlin',
-  url: 'https://github.com/z8dn/advanced-android-project-view',
-  homepage: 'https://plugins.jetbrains.com/plugin/29829-advanced-android-project-tree',
-}
+const PLUGIN_GITHUB = 'https://github.com/z8dn/advanced-android-project-view'
+const PLUGIN_MARKET =
+  'https://plugins.jetbrains.com/plugin/29829-advanced-android-project-tree'
+
+// Build-time star count, with a fallback when GitHub is unreachable.
+let stars = 4
 try {
-  const r = await fetch('https://api.github.com/repos/z8dn/advanced-android-project-view',
-    { headers: { 'Accept': 'application/vnd.github+json' } })
+  const r = await fetch(
+    'https://api.github.com/repos/z8dn/advanced-android-project-view',
+    {
+      headers: { Accept: 'application/vnd.github+json' },
+      signal: AbortSignal.timeout(4000),
+    },
+  )
   if (r.ok) {
     const d = await r.json()
-    featuredProject = {
-      name: d.name,
-      description: d.description ?? featuredProject.description,
-      stars: d.stargazers_count,
-      language: d.language,
-      url: d.html_url,
-      homepage: d.homepage ?? featuredProject.homepage,
-    }
+    if (typeof d.stargazers_count === 'number') stars = d.stargazers_count
   }
-} catch { /* use fallback */ }
-
-// Fetch GitHub contributions from both accounts at build time
-interface GhContribution { date: string; count: number }
-
-let ghContributions: GhContribution[] = [];
-let ghTotal = 0;
-
-try {
-  const [r1, r2] = await Promise.all([
-    fetch('https://github-contributions-api.jogruber.de/v4/z8dn?y=last'),
-    fetch('https://github-contributions-api.jogruber.de/v4/z8dn-anz?y=last'),
-  ]);
-  const [d1, d2] = await Promise.all([r1.json(), r2.json()]);
-
-  const merged = new Map<string, number>();
-  const add = (list: { date: string; count: number }[]) =>
-    list.forEach(c => merged.set(c.date, (merged.get(c.date) ?? 0) + c.count));
-  add(d1.contributions ?? []);
-  add(d2.contributions ?? []);
-
-  ghContributions = [...merged.entries()]
-    .map(([date, count]) => ({ date, count }))
-    .sort((a, b) => a.date.localeCompare(b.date));
-  ghTotal = ghContributions.reduce((s, c) => s + c.count, 0);
-} catch (e) {
-  console.warn('[index] GitHub contributions fetch failed:', e);
+} catch {
+  /* use fallback */
 }
 
-const ghData = JSON.stringify({ contributions: ghContributions, total: ghTotal });
+// Build-time Marketplace download count, with a fallback when the API is unreachable.
+let downloads = 1102
+try {
+  const r = await fetch('https://plugins.jetbrains.com/api/plugins/29829', {
+    signal: AbortSignal.timeout(4000),
+  })
+  if (r.ok) {
+    const d = await r.json()
+    if (typeof d.downloads === 'number') downloads = d.downloads
+  }
+} catch {
+  /* use fallback */
+}
+
+// GitHub contributions from both accounts, fetched at build time and merged by date.
+// The last good result is saved to src/data so a slow or down API never blanks the tile.
+const GH_CACHE = path.join(process.cwd(), 'src/data/gh-contributions.json')
+let merged = new Map<string, number>()
+let ghFetched = true
+for (const user of ['z8dn', 'z8dn-anz']) {
+  try {
+    const r = await fetch(
+      `https://github-contributions-api.jogruber.de/v4/${user}?y=last`,
+      { signal: AbortSignal.timeout(8000) },
+    )
+    if (!r.ok) throw new Error(String(r.status))
+    const d = await r.json()
+    for (const c of (d.contributions ?? []) as { date: string; count: number }[]) {
+      merged.set(c.date, (merged.get(c.date) ?? 0) + c.count)
+    }
+  } catch {
+    ghFetched = false
+  }
+}
+if (ghFetched) {
+  try {
+    fs.mkdirSync(path.dirname(GH_CACHE), { recursive: true })
+    fs.writeFileSync(GH_CACHE, JSON.stringify(Object.fromEntries(merged)))
+  } catch {
+    /* cache is best-effort */
+  }
+} else {
+  try {
+    merged = new Map(Object.entries(JSON.parse(fs.readFileSync(GH_CACHE, 'utf8'))))
+    ghFetched = true
+  } catch {
+    merged = new Map()
+  }
+}
+const ghTotal = [...merged.values()].reduce((s, n) => s + n, 0)
+
+// Heatmap: Sunday-aligned columns, the last WEEKS weeks, UTC date math.
+const WEEKS = 26
+const nonZero = [...merged.values()].filter((n) => n > 0).sort((a, b) => a - b)
+const q = (p: number) => nonZero[Math.floor(nonZero.length * p)] ?? 1
+const [t1, t2, t3] = [q(0.25), q(0.5), q(0.75)]
+const level = (n: number) =>
+  !n ? 0 : n <= t1 ? 1 : n <= t2 ? 2 : n <= t3 ? 3 : 4
+const now = new Date()
+const todayUtc = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())
+const DAY = 86400000
+const start = todayUtc - now.getUTCDay() * DAY - (WEEKS - 1) * 7 * DAY
+const cells = ghFetched
+  ? Array.from({ length: WEEKS * 7 }, (_, i) => {
+      const t = start + i * DAY
+      const date = new Date(t).toISOString().slice(0, 10)
+      const n = merged.get(date) ?? 0
+      return { date, n, lvl: level(n), future: t > todayUtc }
+    })
+  : Array.from({ length: WEEKS * 7 }, (_, i) => ({
+      date: '',
+      n: 0,
+      lvl: 0,
+      future: false,
+    }))
+
+const career: {
+  years: string
+  role: string
+  where: string
+  icon?: string
+  image?: ImageMetadata
+  linked?: boolean
+  self?: boolean
+}[] = [
+  {
+    years: '2025 – now',
+    role: 'Technical Lead',
+    where: 'HCLTech',
+    image: hclLogo,
+  },
+  {
+    years: '2025 – now',
+    role: 'Senior Software Engineer',
+    where: 'ANZ Plus · contract, via HCLTech',
+    image: anzLogo,
+    linked: true,
+  },
+  {
+    years: '2023 – 2025',
+    role: 'Senior Android Engineer',
+    where: 'NAVER Vietnam',
+    image: naverLogo,
+  },
+  {
+    years: '2018 – 2023',
+    role: 'Mobile Engineer',
+    where: 'Freelance · clients in Japan, remote',
+    self: true,
+  },
+  {
+    years: '2017 – 2018',
+    role: 'Software Engineer',
+    where: 'Splus-Software',
+    image: splusLogo,
+  },
+]
+
+const email = SOCIAL_LINKS.find((l) => l.label === 'Email')
+const emailAddress = email?.href.replace('mailto:', '') ?? ''
+const contactLinks = SOCIAL_LINKS.filter((l) =>
+  ['LinkedIn', 'Medium', 'RSS'].includes(l.label),
+)
+const fmt = (d: Date) => d.toISOString().slice(0, 10)
+import fs from 'node:fs'
+import path from 'node:path'
+import { Image } from 'astro:assets'
+import hclLogo from '@/assets/logos/hcltech.jpg'
+import anzLogo from '@/assets/logos/anz-plus.png'
+import naverLogo from '@/assets/logos/naver.png'
+import splusLogo from '@/assets/logos/splus.png'
+import slide1 from '@/assets/plugin/slide-1.png'
+import slide2 from '@/assets/plugin/slide-2.png'
+import slide3 from '@/assets/plugin/slide-3.png'
+import slide4 from '@/assets/plugin/slide-4.png'
+import slide5 from '@/assets/plugin/slide-5.png'
+
+const pluginSlides = [
+  { src: slide1, alt: 'The files Android view hides, one click away: build outputs and project files in the Android project tree' },
+  { src: slide2, alt: 'Show build/ inside every module, from the Display Build Directory option' },
+  { src: slide3, alt: 'See what a pattern matches before you save it, in the custom file group editor' },
+  { src: slide4, alt: 'Search inside a group: every file group is a scope in Find in Files' },
+  { src: slide5, alt: 'Group the files you keep reaching for, in the plugin settings' },
+]
 ---
 
-<Layout class="max-w-6xl">
-  <PageHead slot="head" title="Home" />
-  <div class="bg-grid" aria-hidden="true"></div>
+<Layout>
+  <PageHead
+    slot="head"
+    title="z8dn"
+    description="Zayden (z8dn): Android engineer in Ho Chi Minh City. Production banking apps, Android Studio tooling, and writing about Gradle build performance."
+  />
 
-  <!--
-    col:  1              2              3
-    row1: [intro        ][placeholder  ][career     ]
-    row2: [location     ][featured     ][career     ]
-    row3: [activity     ][social       ][time-coding]
-    row4: [latest-post  ][·············][time-coding]
-  -->
-  <section class="grid grid-cols-3 gap-1.5 lg:gap-2.5 max-sm:block max-sm:space-y-2">
+  <h1 class="sr-only">Zayden — Android engineer</h1>
 
-    <!-- Intro — col1-2 row1 -->
-    <div class="[grid-column:1/3] [grid-row:1] flex flex-row items-center gap-4 pixel-card p-2.5 lg:p-5">
-      <div class="flex flex-col justify-center flex-1 min-w-0">
-        <h1 class="text-[1.05rem] lg:text-[1.25rem] font-semibold leading-tight">Hey, I'm Zayden 👋</h1>
-        <p class="font-pixel text-(--accent) mt-1.5 text-[0.5625rem] tracking-wide">
-          AKA Z8DN ▸ ANDROID DEV ▸ HCMC
-        </p>
-        <p class="text-muted-foreground text-[0.775rem] leading-[1.6] mt-2" style="text-wrap:pretty">
-          I build mobile apps and developer tools that make people's lives a little better. Somewhere between shipping features and obsessing over build times, I started writing — not to teach, but to think out loud and share the journey with anyone who'll come along for the ride.
-        </p>
-      </div>
-
-      <!-- Pixel-art mascot (modeled on the real avatar: swept black hair, black tee) -->
-      <svg
-        id="pixel-char"
-        viewBox="0 0 12 16"
-        class="w-16 lg:w-[5.5rem] shrink-0 self-center"
-        style="image-rendering:pixelated;shape-rendering:crispEdges"
-        aria-hidden="true"
-      >
-        <!-- Face -->
-        <rect x="3" y="3" width="6" height="5" fill="#f0c39c"/>
-        <!-- Ears -->
-        <rect x="2" y="5" width="1" height="1" fill="#f0c39c"/>
-        <rect x="9" y="5" width="1" height="1" fill="#f0c39c"/>
-        <!-- Hair — volume on top, swept fringe, short sides -->
-        <rect x="4" y="0" width="5" height="1" fill="#15151e"/>
-        <rect x="3" y="1" width="7" height="1" fill="#15151e"/>
-        <rect x="2" y="2" width="8" height="1" fill="#15151e"/>
-        <rect x="2" y="3" width="1" height="2" fill="#15151e"/>
-        <rect x="9" y="3" width="1" height="2" fill="#15151e"/>
-        <rect x="3" y="3" width="4" height="1" fill="#15151e"/>
-        <!-- Eyes -->
-        <rect x="4" y="5" width="1" height="1" fill="#1d1d28"/>
-        <rect x="7" y="5" width="1" height="1" fill="#1d1d28"/>
-        <!-- Slight smile -->
-        <rect x="5" y="7" width="2" height="1" fill="#c98a6b"/>
-        <!-- Neck -->
-        <rect x="5" y="8" width="2" height="1" fill="#e3b48d"/>
-        <!-- Black tee -->
-        <rect x="2" y="9" width="8" height="1" fill="#2e2e38"/>
-        <rect x="3" y="10" width="6" height="3" fill="#2e2e38"/>
-        <!-- Left arm + hand (static) -->
-        <rect x="1" y="10" width="2" height="2" fill="#2e2e38"/>
-        <rect x="1" y="12" width="1" height="1" fill="#f0c39c"/>
-        <!-- Jeans -->
-        <rect x="3" y="13" width="6" height="2" fill="#2d4080"/>
-        <!-- Shoes -->
-        <rect x="2" y="15" width="3" height="1" fill="#16161d"/>
-        <rect x="7" y="15" width="3" height="1" fill="#16161d"/>
-        <!-- Right arm + hand (wave-animated on hover) — pivot anchored at shoulder (9,10) -->
-        <g transform="translate(9,10)">
-          <g class="pixel-wave-arm">
-            <rect x="0" y="0" width="2" height="2" fill="#2e2e38"/>
-            <rect x="1" y="2" width="1" height="1" fill="#f0c39c"/>
-          </g>
-        </g>
-      </svg>
-    </div>
-
-    <!-- Location / Now — col1 row2 -->
-    <div class="[grid-column:1] [grid-row:2] flex flex-col gap-y-2 pixel-card p-2.5 lg:p-5 relative overflow-hidden">
-      <!-- Vietnam silhouette — subtle background -->
-      <svg
-        viewBox="0 0 50 105"
-        aria-hidden="true"
-        class="absolute -right-1 top-1/2 -translate-y-[38%] h-[115%] opacity-[0.07] text-foreground pointer-events-none select-none z-0"
-        fill="currentColor"
-      >
-        <polygon points="
-          22,1  33,10  40,13
-          34,19  26,26  25,32
-          34,43  41,49
-          48,65  48,75
-          33,87  27,90  18,99
-          17,96  13,89
-          17,83  20,73  23,65
-          33,57  30,43  24,38
-          13,30  13,23  7,13
-          1,7  13,7  20,3
-        "/>
-      </svg>
-      <div class="relative z-10">
-        <p class="pixel-label mb-2">
-          Location
-        </p>
-        <div class="flex items-center gap-2">
-          <p class="text-[0.875rem] font-medium">Ho Chi Minh City</p>
-          <span id="online-dot" class="inline-flex items-center gap-1 rounded-full border bg-background px-1.5 py-0.5 text-[0.6rem] font-medium tracking-wide uppercase">
-            <span class="size-1.5 rounded-full bg-muted-foreground/40" id="online-dot-circle"></span>
-            <span id="online-dot-label" class="text-muted-foreground">Offline</span>
-          </span>
+  <div class="bento-wrap">
+    <div class="bento">
+      <!-- Intro -->
+      <section class="tile t-intro">
+        <span class="hw hw--screws hw--ticks-b" data-part="Z8-01" aria-hidden="true"></span>
+        <div class="intro-head">
+          <span class="intro-name"
+            ><span class="seal" aria-hidden="true">z8</span
+            ><span class="wordmark">z8dn</span></span
+          >
+          <span class="intro-hello">Xin chào · 你好 · Hello</span>
         </div>
-        <p class="text-muted-foreground text-[0.75rem]">Vietnam · UTC+7</p>
-        <p class="font-pixel text-[1.05rem] mt-3 text-foreground">
-          <span id="hcm-clock-h">--</span><span class="pixel-blink text-(--accent)">:</span><span id="hcm-clock-m">--</span>
-          <span id="hcm-clock-ampm" class="text-[0.6rem] text-muted-foreground">--</span>
+        <p class="intro-lede">
+          I'm Zayden, a Chinese-Vietnamese engineer in Ho Chi Minh City. I
+          build Android apps and the tools that build them.
         </p>
-      </div>
-    </div>
-
-    <!-- Featured project — col2 row2 -->
-    <a
-      href={featuredProject.url}
-      target="_blank"
-      rel="noopener noreferrer"
-      class="[grid-column:2] [grid-row:2] pixel-card pixel-card-link p-2.5 lg:p-5 flex flex-col gap-y-2 group "
-    >
-      <p class="pixel-label">
-        Featured project
-      </p>
-      <div class="flex flex-col gap-1 grow">
-        <p class="text-[0.85rem] font-semibold leading-snug tracking-[-0.02em] group-hover:text-foreground transition-colors">
-          Advanced Android<br />Project Tree
+        <p class="intro-sub">
+          Technical Lead at HCLTech, on the Access &amp; Protect mobile team for the ANZ Plus banking app.
         </p>
-        <p class="text-muted-foreground text-[0.75rem] leading-[1.55]" style="text-wrap:pretty">
-          {featuredProject.description}
+        <p class="intro-links">
+          <a class="link-quiet" href="/work">Work</a>
+          <a class="link-quiet" href="/blog">Blog</a>
         </p>
-      </div>
-      <div class="flex items-center gap-2 mt-auto">
-        <span class="inline-flex items-center gap-1 text-muted-foreground text-[0.7rem]">
-          <span class="size-2 rounded-full bg-[#7F52FF] inline-block"></span>
-          {featuredProject.language}
-        </span>
-        <span class="inline-flex items-center gap-0.5 text-muted-foreground text-[0.7rem]">
-          <Icon name="lucide:star" class="size-[10px]" />
-          {featuredProject.stars}
-        </span>
-        <span class="ml-auto inline-flex items-center gap-0.5 text-muted-foreground/50 text-[0.7rem] group-hover:text-muted-foreground transition-colors">
-          <Icon name="lucide:puzzle" class="size-[10px]" />
-          JetBrains Plugin
-        </span>
-      </div>
-    </a>
+      </section>
 
-    <!-- Career timeline — col3 rows1-2 -->
-    <div class="[grid-column:3] [grid-row:1/3] flex flex-col gap-y-2 pixel-card p-2.5 lg:p-5">
-      <p class="pixel-label">
-        Career
-      </p>
-      <ol class="relative flex flex-col grow mx-1">
-        <span class="absolute left-[5px] top-2 bottom-7 w-px bg-border/40 block"></span>
-        {[
-          { title: 'Technical Lead',   company: 'HCLTech · ANZ Plus', date: '2025 – now', active: true  },
-          { title: 'Android Engineer', company: 'NAVER',               date: '2023 – 2025', active: false },
-          { title: 'Role placeholder', company: 'Company',             date: '20xx – 20xx', active: false, dim: true },
-          { title: 'Role placeholder', company: 'Company',             date: '20xx – 20xx', active: false, dim: true },
-        ].map(item => (
-          <li class="relative flex items-start gap-2.5 pb-3 last:pb-0">
-            {item.active ? (
-              <span class="relative z-10 mt-[3px] shrink-0 size-[11px] flex-none flex items-center justify-center">
-                <span class="pixel-blink absolute inline-flex size-full bg-(--accent) opacity-40"></span>
-                <span class="relative size-[7px] bg-(--accent) block"></span>
-              </span>
-            ) : (
-              <span class="relative z-10 mt-[3px] shrink-0 size-[11px] flex-none flex items-center justify-center">
-                <span class="size-[6px] block" style="background:var(--muted-foreground);opacity:0.25"></span>
-              </span>
-            )}
-            <div class="flex flex-col gap-0.5 min-w-0" style={item.active ? '' : 'opacity:0.35'}>
-              <div class="flex items-baseline justify-between gap-1">
-                <p class={`leading-snug truncate ${item.active ? 'text-[0.8rem] font-medium' : 'text-[0.78rem] font-normal text-muted-foreground'}`}>{item.title}</p>
-                <p class="text-muted-foreground/60 text-[0.65rem] font-mono shrink-0">{item.date}</p>
-              </div>
-              <p class="text-muted-foreground text-[0.72rem]">{item.company}</p>
-            </div>
-          </li>
-        ))}
-      </ol>
-    </div>
+      <!-- Here -->
+      <section class="tile t-here">
+        <span class="hw" data-part="Z8-02" aria-hidden="true"></span>
+        <p class="eyebrow">Here</p>
+        <div class="here-body">
+          <p class="here-clock">
+            <time id="hcm-clock" datetime=""
+              ><span id="hcm-h">--</span><span class="colon">:</span><span
+                id="hcm-m">--</span
+              ></time
+            >
+          </p>
+          <p class="here-place">Ho Chi Minh City</p>
+          <p class="here-tz">UTC+7</p>
+        </div>
+      </section>
 
-    <!-- Skills / WakaTime — col3 rows3-4 -->
-    <div class="[grid-column:3] [grid-row:3/5] pixel-card p-2.5 lg:p-5">
-      <p class="pixel-label mb-2">
-        Time coding
-      </p>
-      <div class="flex flex-col gap-1.5">
-        {[
-          { name: 'Kotlin',     icon: 'simple-icons:kotlin',     hours: 842 },
-          { name: 'TypeScript', icon: 'simple-icons:typescript', hours: 721 },
-          { name: 'Gradle',     icon: 'simple-icons:gradle',     hours: 398 },
-          { name: 'Android',    icon: 'simple-icons:android',    hours: 310 },
-          { name: 'Astro',      icon: 'simple-icons:astro',      hours: 203 },
-          { name: 'MDX',        icon: 'simple-icons:mdx',        hours: 167 },
-          { name: 'Python',     icon: 'simple-icons:python',     hours: 134 },
-        ].map((s, _, arr) => (
-          <div class="skill-row">
-            <div class="skill-icon" title={s.name}>
-              <Icon name={s.icon} class="size-[13px] text-foreground/70" />
-            </div>
-            <div class="skill-cells">
-              {Array.from({ length: 12 }).map((_, i) => (
-                <div class:list={['skill-cell', { on: i < Math.round((s.hours / arr[0].hours) * 12) }]} />
-              ))}
-            </div>
-            <span class="skill-hours">{s.hours}h</span>
+      <!-- Phone -->
+      <section class="tile tile--bleed t-phone">
+        <span class="hw hw--screws" data-part="Z8-03" aria-hidden="true"></span>
+        <div class="tile-head">
+          <p class="eyebrow">Day job</p>
+          <p class="tile-caption">ANZ Plus · selfie capture and digital registration</p>
+        </div>
+        <div class="demo-area demo-area--phone" style="--r: 0.584">
+          <div class="demo-box">
+            <PhoneDemo client:idle />
           </div>
-        ))}
+        </div>
+      </section>
+
+      <!-- Plugin -->
+      <section class="tile tile--bleed t-plugin">
+        <span class="hw hw--screws hw--ticks-r" data-part="Z8-04" aria-hidden="true"></span>
+        <div class="carousel" data-carousel aria-roledescription="carousel" aria-label="Advanced Android Project Tree screenshots">
+          <ul class="carousel-track" data-track tabindex="0">
+            {
+              pluginSlides.map((sl, i) => (
+                <li class="carousel-slide" aria-label={`${i + 1} of ${pluginSlides.length}`}>
+                  <Image
+                    src={sl.src}
+                    alt={sl.alt}
+                    widths={[640, 1280, 1920]}
+                    sizes="(min-width: 1024px) 580px, 100vw"
+                    loading={i === 0 ? 'eager' : 'lazy'}
+                  />
+                </li>
+              ))
+            }
+          </ul>
+          <button class="carousel-btn carousel-btn--prev" data-prev type="button" aria-label="Previous screenshot">
+            <Icon name="lucide:chevron-left" />
+          </button>
+          <button class="carousel-btn carousel-btn--next" data-next type="button" aria-label="Next screenshot">
+            <Icon name="lucide:chevron-right" />
+          </button>
+          <div class="carousel-dots" data-dots aria-hidden="true">
+            {pluginSlides.map((_, i) => <span class:list={{ on: i === 0 }} />)}
+          </div>
+        </div>
+        <div class="plugin-copy">
+          <p class="eyebrow">Open source</p>
+          <div class="plugin-title">
+            <h2>Advanced Android Project Tree</h2>
+          </div>
+          <p class="plugin-stats">
+            <span
+              ><strong>{downloads.toLocaleString('en-US')}</strong> downloads</span
+            >
+            <span aria-label={`${stars} GitHub stars`}
+              ><strong>★ {stars}</strong> on GitHub</span
+            >
+          </p>
+          <p class="plugin-desc">
+            An Android Studio plugin that adds quick access to commonly used
+            directories and files in the project view.
+          </p>
+          <p class="plugin-links">
+            <a class="link-quiet" href={PLUGIN_GITHUB} rel="noopener">GitHub</a>
+            <a class="link-quiet" href={PLUGIN_MARKET} rel="noopener"
+              >Marketplace</a
+            >
+          </p>
+        </div>
+      </section>
+
+      <!-- Pattern A -->
+      <div class="tile tile--bare t-pata" aria-hidden="true">
+        <BoardTile variant="panel" />
       </div>
-    </div>
 
-    <!-- Activity heatmap — col1 row3 -->
-    <div class="[grid-column:1] [grid-row:3] pixel-card p-2.5 lg:p-5">
-      <p class="pixel-label mb-2">
-        Activity
-      </p>
-      <div id="gh-graph-container"></div>
-    </div>
+      <!-- Build -->
+      {
+        gradlePost ? (
+          <a
+            class="tile tile--bleed tile--link t-build"
+            href={`/blog/${gradlePost.id}`}
+            aria-label={`Build time: ${gradlePost.data.title}`}
+          >
+            <span class="hw" data-part="Z8-06" aria-hidden="true"></span>
+            <div class="tile-head">
+              <p class="eyebrow">Build time</p>
+            </div>
+            <div class="demo-area demo-area--build" style="--r: 1.186">
+              <div class="demo-box">
+                <GradleDemo client:idle />
+              </div>
+            </div>
+            <span class="arrow" aria-hidden="true">
+              <Icon name="lucide:arrow-up-right" size={16} />
+            </span>
+          </a>
+        ) : (
+          <section class="tile tile--bleed t-build">
+            <span class="hw" data-part="Z8-06" aria-hidden="true"></span>
+            <div class="tile-head">
+              <p class="eyebrow">Build time</p>
+            </div>
+            <div class="demo-area demo-area--build" style="--r: 1.186">
+              <div class="demo-box">
+                <GradleDemo client:idle />
+              </div>
+            </div>
+          </section>
+        )
+      }
 
-    <!-- Latest post — col1-2 row4 -->
-    {latestPost && (
+      <!-- Career -->
+      <section class="tile t-career">
+        <span class="hw hw--screws hw--ticks-r" data-part="Z8-07" aria-hidden="true"></span>
+        <p class="eyebrow">Career</p>
+        <ol class="career">
+          {
+            career.map((c, i) => (
+              <li class:list={['career-row', { 'career-row--linked': c.linked }]}>
+                <span class:list={['career-logo', { 'career-logo--self': c.self }]} aria-hidden="true">
+                  {c.image ? (
+                    <Image src={c.image} alt="" width={56} height={56} />
+                  ) : (
+                    c.self ? 'z8' : c.icon && <Icon name={c.icon} />
+                  )}
+                </span>
+                <span class="career-years">
+                  {c.years.endsWith('now') && <span class="now-dot" aria-hidden="true" />}
+                  {c.years}
+                </span>
+                <span class="career-role">{c.role}</span>
+                <span class="career-where">{c.where}</span>
+              </li>
+            ))
+          }
+        </ol>
+      </section>
+
+      <!-- Activity -->
+      <section class="tile t-activity">
+        <span class="hw hw--screws" data-part="Z8-08" aria-hidden="true"></span>
+        <div class="activity-head">
+          <p class="eyebrow">GitHub activity</p>
+          {
+            ghFetched && (
+              <p class="activity-total">
+                {ghTotal.toLocaleString('en-US')}
+                <span> in the last year</span>
+              </p>
+            )
+          }
+        </div>
+        <div class="heat" role="img" aria-label={ghFetched ? `${ghTotal} GitHub contributions in the last year` : 'GitHub activity unavailable'}>
+          {
+            cells.map((c) => (
+              <i
+                class="heat-cell"
+                data-l={c.lvl}
+                data-future={c.future ? '' : undefined}
+                title={c.date ? `${c.date} · ${c.n}` : undefined}
+              />
+            ))
+          }
+        </div>
+      </section>
+
+      <!-- Pattern B -->
+      <div class="tile tile--bare t-patb" aria-hidden="true">
+        <BoardTile variant="board" />
+      </div>
+
+      <!-- Post -->
+      {
+        latest && (
+          <a class="tile tile--link t-post" href={`/blog/${latest.id}`}>
+        <span class="hw hw--screws hw--ticks-r" data-part="Z8-10" aria-hidden="true"></span>
+            <p class="eyebrow">Latest post</p>
+            <div class="post-body">
+              <time class="post-date" datetime={fmt(latest.data.date)}>
+                {fmt(latest.data.date)}
+              </time>
+              <h2 class="post-title">{latest.data.title}</h2>
+              <p class="post-desc">{latest.data.description}</p>
+            </div>
+            <span class="arrow" aria-hidden="true">
+              <Icon name="lucide:arrow-up-right" size={16} />
+            </span>
+          </a>
+        )
+      }
+
+      <!-- GitHub -->
       <a
-        href={`/blog/${latestPost.id}`}
-        class="[grid-column:1/3] [grid-row:4] pixel-card pixel-card-link p-2.5 lg:p-5 flex flex-col gap-1.5 group"
+        class="tile tile--link t-github"
+        href="https://github.com/z8dn"
+        rel="noopener"
+        aria-label="z8dn on GitHub"
       >
-        <p class="pixel-label">
-          Latest post
-        </p>
-        <p class="text-[0.8rem] font-medium leading-snug tracking-[-0.01em] grow group-hover:text-foreground transition-colors line-clamp-2" style="text-wrap:pretty">
-          {latestPost.data.title}
-        </p>
-        <p class="text-muted-foreground/60 text-[0.7rem] font-mono">
-          {latestPost.data.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-        </p>
+        <span class="hw" data-part="Z8-11" aria-hidden="true"></span>
+        <span class="gh-mark" aria-hidden="true">
+          <Icon name="simple-icons:github" />
+        </span>
+        <span class="gh-handle">@z8dn</span>
+        <span class="arrow" aria-hidden="true">
+          <Icon name="lucide:arrow-up-right" size={16} />
+        </span>
       </a>
-    )}
 
-    <!-- Social chips — col2 row3 (last in DOM → bottom on mobile) -->
-    <div class="[grid-column:2] [grid-row:3] flex items-center justify-center gap-3">
-      {[
-        { href: 'https://github.com/z8dn',               icon: 'simple-icons:github',   label: 'GitHub'   },
-        { href: 'https://linkedin.com/in/z8dn',          icon: 'simple-icons:linkedin', label: 'LinkedIn' },
-        { href: 'mailto:phunggiabuu30@gmail.com',         icon: 'lucide:mail',           label: 'Email'    },
-        { href: 'https://medium.com/@z8dn',              icon: 'simple-icons:medium',   label: 'Medium'   },
-      ].map(s => (
-        <a
-          href={s.href}
-          target={s.href.startsWith('mailto') ? undefined : '_blank'}
-          rel={s.href.startsWith('mailto') ? undefined : 'noopener noreferrer'}
-          aria-label={s.label}
-          class="size-7 pixel-card pixel-card-link flex items-center justify-center shrink-0"
-        >
-          <Icon name={s.icon} class="size-[0.75rem] text-muted-foreground" />
-        </a>
-      ))}
+      <!-- Contact -->
+      <section class="tile t-contact">
+        <span class="hw" data-part="Z8-12" aria-hidden="true"></span>
+        <p class="eyebrow">Say hello</p>
+        {
+          email && (
+            <a class="contact-email link-quiet" href={email.href}>
+              {emailAddress}
+            </a>
+          )
+        }
+        <ul class="contact-links">
+          {
+            contactLinks.map((l) => (
+              <li>
+                <a
+                  class="link-quiet"
+                  href={l.href}
+                  rel={l.href.startsWith('http') ? 'noopener' : undefined}
+                  >{l.label}</a
+                >
+              </li>
+            ))
+          }
+        </ul>
+      </section>
     </div>
-
-  </section>
+  </div>
 </Layout>
 
-<!-- GitHub contribution data (build-time fetched) -->
-<script id="gh-data" type="application/json" set:html={ghData}></script>
-
-<style is:global>
-  /* Catppuccin Latte contribution colours */
-  :root {
-    --gh-0: #ccd0da;
-    --gh-1: #b0d4a4;
-    --gh-2: #82c37a;
-    --gh-3: #5db054;
-    --gh-4: #40a02b;
-  }
-  /* Catppuccin Mocha contribution colours */
-  [data-theme='dark'] {
-    --gh-0: #313244;
-    --gh-1: #3b4f3b;
-    --gh-2: #4e6a4c;
-    --gh-3: #72a56e;
-    --gh-4: #a6e3a1;
-  }
-  .gh-weeks { display: flex; gap: 2px; width: 100%; }
-  .gh-week { flex: 1; display: flex; flex-direction: column; gap: 2px; }
-  .gh-cell { background: var(--gh-0); width: 100%; aspect-ratio: 1; }
-
-  .gh-cell[data-level="1"] { background: var(--gh-1); }
-  .gh-cell[data-level="2"] { background: var(--gh-2); }
-  .gh-cell[data-level="3"] { background: var(--gh-3); }
-  .gh-cell[data-level="4"] { background: var(--gh-4); }
-
-  /* Background grid */
-  .bg-grid {
-    position: fixed;
-    inset: 0;
-    z-index: -1;
-    background-image:
-      linear-gradient(to right, var(--border) 1px, transparent 1px),
-      linear-gradient(to bottom, var(--border) 1px, transparent 1px);
-    background-size: 40px 40px;
-    -webkit-mask-image: radial-gradient(ellipse 70% 65% at 50% 35%, black 0%, transparent 100%);
-    mask-image: radial-gradient(ellipse 70% 65% at 50% 35%, black 0%, transparent 100%);
-    pointer-events: none;
-  }
-
-  /* Skills bar chart */
-  .skill-row { display: flex; align-items: center; gap: 8px; }
-  .skill-icon {
-    width: 22px; height: 22px;
-    background: var(--muted); flex-shrink: 0;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 9px; font-weight: 700;
-    font-family: 'Geist Mono', ui-monospace, monospace;
-    color: var(--muted-foreground);
-    letter-spacing: -0.03em;
-  }
-  [data-theme='dark'] .skill-icon { background: oklch(0.22 0 0); }
-  .skill-cells { flex: 1; display: flex; gap: 2px; }
-  .skill-cell { flex: 1; height: 10px; background: var(--muted); }
-  .skill-cell.on { background: var(--accent); }
-  .skill-hours {
-    font-size: 11px; font-family: 'Geist Mono', ui-monospace, monospace;
-    color: var(--muted-foreground); width: 36px; text-align: right; flex-shrink: 0;
-  }
-
-  /* Pixel-art character wave animation */
-  .pixel-wave-arm {
-    transform-origin: 0px 0px;
-  }
-  #pixel-char:hover .pixel-wave-arm {
-    animation: pixel-wave 0.9s ease-in-out infinite;
-  }
-  @keyframes pixel-wave {
-    0%, 100% { transform: rotate(0deg); }
-    35%       { transform: rotate(-145deg); }
-    65%       { transform: rotate(-115deg); }
-  }
-</style>
-
-<script>
-  // Module-level clock interval handle so we can clear it before each swap
-  let _clockInterval: ReturnType<typeof setInterval> | null = null;
-
-  function startClock() {
-    const hEl = document.getElementById('hcm-clock-h')
-    const mEl = document.getElementById('hcm-clock-m')
-    const apEl = document.getElementById('hcm-clock-ampm')
-    if (!hEl || !mEl || !apEl) return
-    const tick = () => {
-      const now = new Date()
-      const h = (now.getUTCHours() + 7) % 24
-      hEl.textContent = String(h % 12 || 12)
-      mEl.textContent = String(now.getUTCMinutes()).padStart(2, '0')
-      apEl.textContent = h >= 12 ? 'PM' : 'AM'
+<script is:inline>
+  ;(function () {
+    function tick() {
+      var el = document.getElementById('hcm-clock')
+      if (!el) return
+      var now = new Date()
+      var parts = new Intl.DateTimeFormat('en-GB', {
+        timeZone: 'Asia/Ho_Chi_Minh',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+      }).formatToParts(now)
+      var h = '--'
+      var m = '--'
+      parts.forEach(function (p) {
+        if (p.type === 'hour') h = p.value === '24' ? '00' : p.value
+        if (p.type === 'minute') m = p.value
+      })
+      var hEl = document.getElementById('hcm-h')
+      var mEl = document.getElementById('hcm-m')
+      if (hEl) hEl.textContent = h
+      if (mEl) mEl.textContent = m
+      el.setAttribute('datetime', now.toISOString())
+    }
+    window.__hcmTick = tick
+    if (!window.__hcmClockInit) {
+      window.__hcmClockInit = true
+      setInterval(function () {
+        window.__hcmTick && window.__hcmTick()
+      }, 15000)
+      document.addEventListener('astro:page-load', tick)
     }
     tick()
-    _clockInterval = setInterval(tick, 1000)
-  }
+  })()
+</script>
 
-  function checkOnline() {
-    const dot = document.getElementById('online-dot');
-    if (!dot) return;
-    const utc7Hour = (new Date().getUTCHours() + 7) % 24;
-    const circle = document.getElementById('online-dot-circle');
-    const label = document.getElementById('online-dot-label');
-    if (utc7Hour >= 9 && utc7Hour < 21) {
-      circle?.classList.replace('bg-muted-foreground/40', 'bg-emerald-500');
-      if (label) label.textContent = 'Online';
-    }
-  }
-
-  function buildGhGraph() {
-    const container = document.getElementById('gh-graph-container');
-    if (!container) return;
-    // Already rendered — skip (e.g. hot-reload without a full swap)
-    if (container.hasChildNodes()) return;
-
-    const raw = document.getElementById('gh-data');
-    if (!raw) return;
-
-    let contributions: { date: string; count: number }[] = [];
-    try {
-      const parsed = JSON.parse(raw.textContent ?? '{}');
-      contributions = parsed.contributions ?? [];
-    } catch { return; }
-
-    const dateMap = new Map(contributions.map(c => [c.date, c.count]));
-
-    // Level thresholds (quartiles of active days)
-    const nonZero = contributions.map(c => c.count).filter(c => c > 0).sort((a, b) => a - b);
-    const p = (pct: number) => nonZero[Math.floor(nonZero.length * pct)] ?? 1;
-    const [t1, t2, t3] = [p(0.25), p(0.5), p(0.75)];
-    const getLevel = (n: number) => !n ? 0 : n <= t1 ? 1 : n <= t2 ? 2 : n <= t3 ? 3 : 4;
-
-    // Sunday-aligned weeks — ~11 weeks back
-    const today = new Date(); today.setHours(0, 0, 0, 0);
-    const cursor = new Date(today);
-    cursor.setDate(cursor.getDate() - today.getDay());
-    cursor.setDate(cursor.getDate() - 10 * 7);
-
-    const weeks: ({ date: string; level: number } | null)[][] = [];
-
-    while (cursor <= today) {
-      const week: ({ date: string; level: number } | null)[] = [];
-      for (let d = 0; d < 7; d++) {
-        if (cursor > today) { week.push(null); }
-        else {
-          const key = cursor.toISOString().slice(0, 10);
-          week.push({ date: key, level: getLevel(dateMap.get(key) ?? 0) });
-        }
-        cursor.setDate(cursor.getDate() + 1);
+<script>
+  function initCarousels() {
+    document.querySelectorAll<HTMLElement>('[data-carousel]').forEach((root) => {
+      if (root.dataset.ready) return
+      root.dataset.ready = '1'
+      const track = root.querySelector<HTMLElement>('[data-track]')!
+      const dots = [...root.querySelectorAll<HTMLElement>('[data-dots] span')]
+      const index = () => Math.round(track.scrollLeft / track.clientWidth)
+      const go = (i: number) => {
+        const n = dots.length
+        track.scrollTo({ left: ((i + n) % n) * track.clientWidth })
       }
-      weeks.push(week);
-    }
-
-    // Drop trailing week if today is Sunday (only 1 visible square)
-    if (weeks.length && weeks[weeks.length - 1].filter(d => d !== null).length <= 1) {
-      weeks.pop();
-    }
-
-    const weeksRow = document.createElement('div'); weeksRow.className = 'gh-weeks';
-    weeks.forEach(week => {
-      const weekEl = document.createElement('div'); weekEl.className = 'gh-week';
-      week.forEach(day => {
-        const cell = document.createElement('div'); cell.className = 'gh-cell';
-        if (day) {
-          cell.setAttribute('data-level', String(day.level));
-          cell.title = `${day.date} · ${dateMap.get(day.date) ?? 0}`;
-        } else {
-          cell.style.visibility = 'hidden';
-        }
-        weekEl.appendChild(cell);
-      });
-      weeksRow.appendChild(weekEl);
-    });
-    container.appendChild(weeksRow);
+      root.querySelector('[data-prev]')?.addEventListener('click', () => go(index() - 1))
+      root.querySelector('[data-next]')?.addEventListener('click', () => go(index() + 1))
+      track.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowLeft') go(index() - 1)
+        if (e.key === 'ArrowRight') go(index() + 1)
+      })
+      track.addEventListener(
+        'scroll',
+        () => dots.forEach((d, i) => d.classList.toggle('on', i === index())),
+        { passive: true },
+      )
+    })
   }
-
-  // Clear clock before Astro swaps the DOM (avoids stale element references)
-  document.addEventListener('astro:before-swap', () => {
-    if (_clockInterval !== null) {
-      clearInterval(_clockInterval);
-      _clockInterval = null;
-    }
-  });
-
-  // Re-run on every navigation (initial load + client-side transitions)
-  document.addEventListener('astro:page-load', () => {
-    startClock();
-    checkOnline();
-    buildGhGraph();
-  });
+  document.addEventListener('astro:page-load', initCarousels)
+  initCarousels()
 </script>

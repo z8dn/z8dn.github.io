@@ -1,0 +1,808 @@
+/* Exposed-hardware bento: machined tiles on a dot-grid board, 1px hairlines,
+   no shadows, no gradients. --signal (red) is used once per tile at most. */
+
+.bento-wrap {
+  container-type: inline-size;
+  width: 100%;
+}
+
+.bento {
+  --pad: 1.125rem;
+  display: grid;
+  gap: var(--grout);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-auto-rows: calc((100cqw - 3 * var(--grout)) / 4);
+  grid-template-areas:
+    'intro    intro    here   phone'
+    'plugin   plugin   pata   phone'
+    'plugin   plugin   build  career'
+    'activity activity patb   career'
+    'post     post     github contact';
+}
+
+.t-intro { grid-area: intro; }
+.t-here { grid-area: here; }
+.t-phone { grid-area: phone; }
+.t-plugin { grid-area: plugin; }
+.t-pata { grid-area: pata; }
+.t-build { grid-area: build; }
+.t-career { grid-area: career; }
+.t-activity { grid-area: activity; }
+.t-patb { grid-area: patb; }
+.t-post { grid-area: post; }
+.t-github { grid-area: github; }
+.t-contact { grid-area: contact; }
+
+/* ---------- Tile ---------- */
+.tile {
+  container-type: inline-size;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  padding: var(--pad);
+  background: var(--tile);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-tile);
+  color: var(--foreground);
+}
+.tile--bleed,
+.tile--bare {
+  padding: 0;
+  overflow: hidden;
+}
+.tile--link {
+  text-decoration: none;
+  color: var(--foreground);
+}
+.tile--link:hover,
+.tile:has(.arrow):hover {
+  border-color: color-mix(in srgb, var(--foreground) 40%, transparent);
+}
+.tile--link:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+.tile--bare > * {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.tile .eyebrow {
+  margin: 0;
+  line-height: 1.2;
+}
+.tile-head {
+  padding: var(--pad) var(--pad) 0.5rem;
+  flex: none;
+}
+.tile-caption {
+  margin: 0.375rem 0 0;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+}
+
+/* ---------- Hardware details: screws, part labels, guide ticks ---------- */
+.hw {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  border-radius: inherit;
+}
+/* part label, top right */
+.hw::before {
+  content: attr(data-part);
+  position: absolute;
+  top: 0.5rem;
+  right: 1.625rem;
+  font-family: var(--font-dot);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  color: var(--muted-foreground);
+}
+.hw:not(.hw--screws)::before {
+  right: 0.875rem;
+}
+/* two screws in opposite corners: 6px ring, 1px slot */
+.hw--screws {
+  --screw: var(--muted-foreground);
+  background:
+    linear-gradient(var(--screw), var(--screw)) calc(100% - 9.5px) 11px / 4px 1px no-repeat,
+    radial-gradient(circle, transparent 2px, var(--screw) 2.5px, var(--screw) 3.4px, transparent 3.6px) calc(100% - 8px) 8px / 7px 7px no-repeat,
+    linear-gradient(var(--screw), var(--screw)) 9.5px calc(100% - 11px) / 4px 1px no-repeat,
+    radial-gradient(circle, transparent 2px, var(--screw) 2.5px, var(--screw) 3.4px, transparent 3.6px) 8px calc(100% - 8px) / 7px 7px no-repeat;
+}
+/* guide ticks along an edge */
+.hw--ticks-r::after,
+.hw--ticks-b::after {
+  content: '';
+  position: absolute;
+  background-image: repeating-linear-gradient(
+    var(--tick-dir, to bottom),
+    var(--muted-foreground) 0 1px,
+    transparent 1px 8px
+  );
+  opacity: 0.55;
+}
+.hw--ticks-r::after {
+  right: 0;
+  top: 34%;
+  height: 32%;
+  width: 6px;
+}
+.hw--ticks-b::after {
+  --tick-dir: to right;
+  bottom: 0;
+  left: 38%;
+  width: 24%;
+  height: 6px;
+}
+
+/* ---------- Arrow button ---------- */
+.arrow {
+  position: absolute;
+  right: 0.625rem;
+  bottom: 0.625rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--tile);
+  color: var(--foreground);
+  z-index: 2;
+}
+.tile--link:hover .arrow {
+  background: var(--foreground);
+  color: var(--tile);
+  border-color: var(--foreground);
+}
+
+/* ---------- Demo areas: fill the slot, cut by the tile ---------- */
+.demo-area {
+  position: relative;
+  flex: 1 1 0;
+  min-height: 0;
+  overflow: hidden;
+  container-type: size;
+  pointer-events: none;
+}
+.demo-box {
+  position: absolute;
+  top: 0;
+  left: 0;
+  /* at least the slot's width, wide enough to fill its height at the
+     design's aspect ratio, never more than 1.4x the slot (bleeds right) */
+  width: min(max(100cqw, calc(100cqh * var(--r))), calc(100cqw * 1.4));
+}
+.demo-area--phone .demo-box {
+  /* A still with its own crop per width: the box is exactly the slot wide
+     and hangs from the bottom, so nothing is cut that the design didn't cut */
+  left: 0;
+  top: auto;
+  bottom: 0;
+  width: 100cqw;
+}
+.demo-area .ss-fit {
+  margin-inline: 0;
+}
+.demo-area--phone,
+.demo-area--build,
+.demo-area--plugin {
+  /* On narrow layouts the slot height comes from the aspect ratio */
+}
+
+/* ---------- Intro ---------- */
+.t-intro {
+  gap: 0.75rem;
+}
+.intro-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+.intro-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+  font-size: 1.375rem;
+  font-weight: 600;
+  line-height: 1;
+}
+.intro-name .wordmark {
+  font-size: 1.375rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+.intro-hello {
+  font-size: 0.8125rem;
+  letter-spacing: 0.01em;
+  color: var(--muted-foreground);
+}
+.intro-lede {
+  margin: 0;
+  font-size: clamp(0.9375rem, 3.1cqw, 1.1875rem);
+  line-height: 1.45;
+  letter-spacing: -0.01em;
+  text-wrap: pretty;
+  max-width: 46ch;
+}
+.intro-sub {
+  margin: 0;
+  font-size: 0.9375rem;
+  line-height: 1.4;
+  color: var(--muted-foreground);
+}
+.intro-links {
+  margin: auto 0 0;
+  display: flex;
+  gap: 1.5rem;
+  font-weight: 500;
+  font-size: 0.9375rem;
+}
+
+/* ---------- Here ---------- */
+.here-body {
+  margin-top: auto;
+}
+.here-body p {
+  margin: 0;
+}
+.here-clock {
+  /* the clock face: a component under the glass */
+  font-family: var(--font-dot);
+  font-size: 21cqw;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  white-space: nowrap;
+  text-align: center;
+  padding: 0.14em 0 0.12em;
+  background: var(--surface);
+  border-radius: var(--radius-part);
+}
+.here-clock .colon {
+  color: var(--signal);
+}
+.here-place {
+  margin-top: 0.75rem !important;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  line-height: 1.3;
+}
+.here-tz {
+  font-family: var(--font-dot);
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+  margin-top: 0.125rem !important;
+}
+
+/* ---------- Plugin ---------- */
+.t-plugin .demo-area {
+  border-bottom: 1px solid var(--border);
+}
+.plugin-copy {
+  flex: none;
+  display: grid;
+  gap: 0.375rem;
+  padding: 0.875rem var(--pad) var(--pad);
+}
+.plugin-title {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+.plugin-title h2 {
+  margin: 0;
+  font-size: clamp(1.0625rem, 3.6cqw, 1.375rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+.stars {
+  font-family: var(--font-dot);
+  font-size: 0.8125rem;
+  color: var(--muted-foreground);
+  white-space: nowrap;
+}
+.plugin-desc {
+  margin: 0;
+  font-size: 0.9375rem;
+  line-height: 1.4;
+  color: var(--muted-foreground);
+  max-width: 56ch;
+}
+.plugin-links {
+  margin: 0.125rem 0 0;
+  display: flex;
+  gap: 1.25rem;
+  font-weight: 500;
+  font-size: 0.9375rem;
+}
+
+/* ---------- Career ---------- */
+.career {
+  list-style: none;
+  margin: 0.75rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+.career-row {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  column-gap: 0.625rem;
+  row-gap: 0.125rem;
+  padding-block: 0.75rem;
+  border-top: 1px solid var(--border);
+}
+.career-years {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-family: var(--font-dot);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+.now-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--signal);
+}
+.career-role {
+  font-size: 0.9375rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+.career-where {
+  font-size: 0.875rem;
+  line-height: 1.35;
+  color: var(--muted-foreground);
+}
+
+/* ---------- Activity ---------- */
+.activity-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+.activity-total {
+  margin: 0;
+  font-family: var(--font-dot);
+  font-size: 1.125rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.activity-total span {
+  color: var(--muted-foreground);
+  font-weight: 500;
+  font-size: 0.75rem;
+}
+.heat {
+  margin-top: auto;
+  display: grid;
+  grid-auto-flow: column;
+  grid-template-rows: repeat(7, auto);
+  grid-template-columns: repeat(26, minmax(0, 1fr));
+  gap: 3px;
+}
+.heat-cell {
+  display: block;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--surface);
+}
+.heat-cell[data-l='1'] { background: color-mix(in srgb, var(--foreground) 25%, transparent); }
+.heat-cell[data-l='2'] { background: color-mix(in srgb, var(--foreground) 50%, transparent); }
+.heat-cell[data-l='3'] { background: color-mix(in srgb, var(--foreground) 75%, transparent); }
+.heat-cell[data-l='4'] { background: var(--foreground); }
+.heat-cell[data-future] { visibility: hidden; }
+
+/* ---------- Post ---------- */
+.post-body {
+  margin-top: auto;
+  padding-right: 2.5rem;
+  display: grid;
+  gap: 0.375rem;
+}
+.post-date {
+  font-family: var(--font-dot);
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  font-size: 0.8125rem;
+  color: var(--muted-foreground);
+}
+.post-title {
+  margin: 0;
+  font-size: clamp(1.125rem, 4.4cqw, 1.75rem);
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.15;
+  text-wrap: balance;
+}
+.post-desc {
+  margin: 0;
+  font-size: 0.9375rem;
+  line-height: 1.4;
+  color: var(--muted-foreground);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ---------- GitHub ---------- */
+.t-github {
+  align-items: center;
+  justify-content: center;
+}
+.gh-mark {
+  display: block;
+  width: 42cqw;
+  height: 42cqw;
+}
+.gh-mark svg {
+  width: 100%;
+  height: 100%;
+}
+.gh-handle {
+  position: absolute;
+  left: var(--pad);
+  bottom: var(--pad);
+  font-family: var(--font-dot);
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  font-size: 0.8125rem;
+  color: var(--muted-foreground);
+}
+
+/* ---------- Contact ---------- */
+.t-contact {
+  gap: 0.625rem;
+}
+.contact-email {
+  font-size: 0.9375rem;
+  font-weight: 500;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+  margin-top: auto;
+}
+.contact-links {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.875rem;
+  font-size: 0.9375rem;
+  font-weight: 500;
+}
+
+/* ---------- Tablet: 2 columns ---------- */
+@media (max-width: 1023px) {
+  .bento {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    --sq: calc((100cqw - var(--grout)) / 2);
+    grid-auto-rows: var(--sq);
+    grid-template-rows:
+      var(--sq) calc(var(--sq) * 1.75) max(calc(var(--sq) * 1.3), 500px) var(--sq) auto auto var(--sq) var(--sq);
+    grid-template-areas:
+      'intro    intro'
+      'plugin   plugin'
+      'phone    career'
+      'here     build'
+      'activity activity'
+      'post     post'
+      'pata     patb'
+      'github   contact';
+  }
+  /* Never taller than the slot: the wide design (358x420) when it fits,
+     else the tall compact one (270x462), so the phone's top is never cut */
+  .t-phone .demo-box {
+    width: min(100cqw, calc(100cqh * 0.852));
+  }
+  @container (max-height: 351px) {
+    .t-phone .demo-box {
+      width: min(100cqw, calc(100cqh * 0.584));
+    }
+  }
+}
+
+/* ---------- Mobile: 2 columns, 8px grout, content-height wide tiles ---------- */
+@media (max-width: 639px) {
+  .bento {
+    --grout: 8px;
+    --pad: 0.875rem;
+    grid-template-rows: none;
+    grid-auto-rows: auto;
+    grid-template-areas:
+      'intro    intro'
+      'here     build'
+      'plugin   plugin'
+      'phone    phone'
+      'pata     patb'
+      'career   career'
+      'activity activity'
+      'post     post'
+      'github   contact';
+  }
+  .t-here,
+  .t-build,
+  .t-pata,
+  .t-patb,
+  .t-github,
+  .t-contact {
+    aspect-ratio: 1;
+  }
+  .t-phone .demo-area {
+    flex: none;
+    aspect-ratio: 358 / 420;
+  }
+  .t-plugin .demo-area {
+    flex: none;
+    aspect-ratio: 358 / 340;
+  }
+  .t-plugin .demo-box {
+    width: 100cqw;
+  }
+  .heat {
+    grid-template-columns: repeat(16, minmax(0, 1fr));
+  }
+  .heat-cell:nth-child(-n + 70) {
+    display: none;
+  }
+  .post-title {
+    font-size: 1.25rem;
+  }
+  .t-intro {
+    gap: 0.625rem;
+  }
+  .intro-lede {
+    font-size: 1.0625rem;
+  }
+  .intro-links {
+    margin-top: 0.25rem;
+  }
+  .tile .eyebrow {
+    font-size: 0.6875rem;
+  }
+  .contact-email {
+    font-size: 0.6875rem;
+    letter-spacing: -0.01em;
+    overflow-wrap: anywhere;
+  }
+  .contact-links,
+  .here-place {
+    font-size: 0.875rem;
+  }
+  .contact-links {
+    gap: 0.125rem 0.625rem;
+  }
+  .career-where {
+    font-size: 0.875rem;
+  }
+}
+
+/* Plugin demo is a wide design: keep it above the compact switch on larger screens */
+@media (min-width: 640px) {
+  .t-plugin .demo-box {
+    min-width: 600px;
+  }
+}
+
+/* The stageshow demos are the only things that move. */
+@media (prefers-reduced-motion: reduce) {
+  .tile,
+  .arrow {
+    transition: none;
+  }
+}
+
+
+/* ---------- Plugin carousel ---------- */
+.carousel {
+  position: relative;
+  flex: none;
+  aspect-ratio: 16 / 9;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+.carousel-track {
+  display: flex;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+}
+.carousel-track::-webkit-scrollbar {
+  display: none;
+}
+.carousel-track:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: -2px;
+}
+.carousel-slide {
+  flex: 0 0 100%;
+  scroll-snap-align: start;
+}
+.carousel-slide img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.carousel-btn {
+  /* sit in the copy area's eyebrow row, clear of the slide */
+  position: absolute;
+  top: calc(100% + 0.75rem);
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  background: var(--tile);
+  color: var(--foreground);
+  cursor: pointer;
+}
+.carousel-btn:hover {
+  background: var(--foreground);
+  border-color: var(--foreground);
+  color: var(--tile);
+}
+.carousel-btn svg {
+  width: 14px;
+  height: 14px;
+}
+.carousel-btn--prev {
+  right: calc(var(--pad) + 34px);
+}
+.carousel-btn--next {
+  right: var(--pad);
+}
+.carousel-dots {
+  position: absolute;
+  left: 50%;
+  bottom: 10px;
+  translate: -50% 0;
+  display: flex;
+  gap: 6px;
+}
+.carousel-dots span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 0.55);
+  box-shadow: 0 0 0 1px rgb(0 0 0 / 0.35);
+}
+.carousel-dots span.on {
+  background: var(--signal);
+}
+.t-plugin .plugin-copy {
+  flex: 1;
+  align-content: center;
+}
+@media (prefers-reduced-motion: reduce) {
+  .carousel-track {
+    scroll-behavior: auto;
+  }
+}
+
+.plugin-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  margin: 0.125rem 0;
+  font-size: 0.8125rem;
+  color: var(--muted-foreground);
+}
+.plugin-stats > span {
+  padding: 0.3125rem 0.625rem;
+  background: var(--surface);
+  border-radius: var(--radius-part);
+}
+.plugin-stats strong {
+  font-family: var(--font-dot);
+  font-size: 0.875rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--foreground);
+  margin-right: 0.125rem;
+}
+
+.career-row > :not(.career-logo) {
+  grid-column: 2;
+}
+.career-logo {
+  grid-column: 1;
+  grid-row: 1 / span 3;
+  align-self: start;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  margin-top: 0.125rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  font-size: 0.625rem;
+  font-weight: 600;
+}
+.career-logo svg {
+  width: 22px;
+  height: 22px;
+}
+
+.career-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.career-logo svg[data-icon='lucide:laptop'] {
+  width: 16px;
+  height: 16px;
+  color: var(--muted-foreground);
+}
+
+.career-logo:has(img) {
+  border: 0;
+  background: transparent;
+}
+/* Two concurrent roles in one engagement: no rule between them, and a line joining the logos */
+.career-row {
+  position: relative;
+}
+.career-row--linked {
+  border-top: 0;
+  padding-top: 0.25rem;
+}
+/* Runs exactly from the bottom edge of the first logo to the top edge of the second */
+.career-row:has(+ .career-row--linked)::after {
+  content: '';
+  position: absolute;
+  left: 13.5px;
+  top: calc(0.75rem + 0.125rem + 28px + 1px);
+  bottom: calc(-0.25rem - 0.125rem);
+  width: 1px;
+  background: var(--muted-foreground);
+  opacity: 0.5;
+}
+
+/* Freelance years: his own mark, as a filled logo like the others */
+.career-logo--self {
+  border: 0;
+  background: var(--foreground);
+  color: var(--tile);
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}

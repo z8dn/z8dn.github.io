@@ -3,7 +3,7 @@ import type { IconMap, SocialLink, Site } from '@/types'
 export const SITE: Site = {
   title: 'z8dn',
   description:
-    'Personal blog and portfolio of Zayden (z8dn) — thoughts, projects, and creative explorations.',
+    'Zayden (z8dn) — Android engineer in Ho Chi Minh City. Apps, build tooling and writing.',
   href: 'https://z8dn.github.io',
   author: 'z8dn',
   locale: 'en-US',
@@ -13,12 +13,12 @@ export const SITE: Site = {
 
 export const NAV_LINKS: SocialLink[] = [
   {
-    href: '/blog',
-    label: 'blog',
-  },
-  {
     href: '/work',
     label: 'work',
+  },
+  {
+    href: '/blog',
+    label: 'blog',
   },
 ]
 
@@ -28,8 +28,12 @@ export const SOCIAL_LINKS: SocialLink[] = [
     label: 'GitHub',
   },
   {
-    href: 'https://twitter.com/z8dn',
-    label: 'Twitter',
+    href: 'https://linkedin.com/in/z8dn',
+    label: 'LinkedIn',
+  },
+  {
+    href: 'https://medium.com/@z8dn',
+    label: 'Medium',
   },
   {
     href: 'mailto:phunggiabuu30@gmail.com',
@@ -43,9 +47,9 @@ export const SOCIAL_LINKS: SocialLink[] = [
 
 export const ICON_MAP: IconMap = {
   Website: 'lucide:globe',
-  GitHub: 'lucide:github',
-  LinkedIn: 'lucide:linkedin',
-  Twitter: 'lucide:twitter',
+  GitHub: 'simple-icons:github',
+  LinkedIn: 'simple-icons:linkedin',
+  Medium: 'simple-icons:medium',
   Email: 'lucide:mail',
   RSS: 'lucide:rss',
 }

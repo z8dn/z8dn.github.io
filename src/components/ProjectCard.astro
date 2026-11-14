@@ -1,8 +1,6 @@
 ---
 import Link from '@/components/Link.astro'
 import { Badge } from '@/components/ui/badge'
-import { formatDate } from '@/lib/utils'
-import { Icon } from 'astro-icon/components'
 import { Image } from 'astro:assets'
 import type { CollectionEntry } from 'astro:content'
 
@@ -11,80 +9,55 @@ interface Props {
 }
 
 const { project } = Astro.props
-
-const TAG_ICONS: Record<string, string> = {
-  'open-source':    'lucide:git-branch',
-  'contract':       'lucide:file-text',
-  'Kotlin':         'simple-icons:kotlin',
-  'Android':        'simple-icons:android',
-  'Android Studio': 'simple-icons:androidstudio',
-  'IntelliJ Plugin':'simple-icons:jetbrains',
-  'TypeScript':     'simple-icons:typescript',
-  'React':          'simple-icons:react',
-  'Swift':          'simple-icons:swift',
-  'Python':         'simple-icons:python',
-  'Astro':          'simple-icons:astro',
-}
+const host = new URL(project.data.link).hostname.replace(/^www\./, '')
 ---
 
-<div class="pixel-card pixel-card-link p-4">
-  <Link
-    href={project.data.link}
-    class="flex flex-col gap-4 sm:flex-row"
-    external
-  >
-    {
-      project.data.image && (
-        <div class="w-full h-36 sm:h-auto sm:w-32 sm:shrink-0 sm:self-stretch overflow-hidden">
+<article class="rule py-8 first:border-t-0 first:pt-0">
+  <div class="grid gap-6 md:grid-cols-[11rem_1fr] md:gap-8">
+    <p class="eyebrow md:pt-2">
+      {
+        project.data.startDate && (
+          <>
+            {project.data.startDate.getFullYear()}
+            {' – '}
+            {project.data.endDate
+              ? project.data.endDate.getFullYear()
+              : 'Present'}
+          </>
+        )
+      }
+    </p>
+    <div class="flex flex-col gap-4">
+      <h3 class="text-2xl leading-tight sm:text-3xl">
+        <Link
+          href={project.data.link}
+          external
+          rel="noopener noreferrer"
+          class="hover:text-accent transition-colors"
+        >
+          {project.data.name}<span class="text-muted-foreground ml-1.5" aria-hidden="true">↗</span>
+        </Link>
+      </h3>
+      <p class="text-muted-foreground max-w-[60ch] leading-relaxed">
+        {project.data.description}
+      </p>
+      {
+        project.data.image && (
           <Image
             src={project.data.image}
             alt={project.data.name}
             width={1200}
             height={630}
-            class="h-full w-full object-cover object-center"
+            class="border-border max-w-xl w-full rounded-md border object-cover"
           />
-        </div>
-      )
-    }
-    <div class="grow">
-      <h3 class="mb-2 font-pixel text-[0.75rem] leading-relaxed">
-        {project.data.name}
-      </h3>
-      <p class="text-muted-foreground mb-2 text-sm">
-        {project.data.description}
-      </p>
-      <p class="text-muted-foreground/70 mb-2 flex items-center gap-x-1.5 text-xs">
-        {project.data.startDate && (
-          <span class="flex items-center gap-x-1.5">
-            <Icon name="lucide:calendar" class="size-3" />
-            <span>
-              {formatDate(project.data.startDate)}
-              {project.data.endDate
-                ? ` → ${formatDate(project.data.endDate)}`
-                : ' → Present'}
-            </span>
-          </span>
-        )}
-        {project.data.startDate && (
-          <span class="text-muted-foreground/30">|</span>
-        )}
-        <span class="flex items-center gap-x-1">
-          <Icon name="lucide:external-link" class="size-3" />
-          <span>{new URL(project.data.link).hostname}</span>
-        </span>
-      </p>
-      {
-        project.data.tags && (
-          <div class="flex flex-wrap gap-2">
-            {project.data.tags.map((tag: string) => (
-              <Badge variant="muted" className="flex items-center gap-1">
-                {TAG_ICONS[tag] && <Icon name={TAG_ICONS[tag]} class="size-3 shrink-0" />}
-                {tag}
-              </Badge>
-            ))}
-          </div>
         )
       }
+      <div class="flex flex-wrap items-center gap-x-4 gap-y-1">
+        {project.data.tags.map((tag: string) => (
+          <Badge variant="muted">{tag}</Badge>
+        ))}
+        <span class="text-muted-foreground dot text-xs">{host}</span>
+      </div>
     </div>
-  </Link>
-</div>
+  </div>
+</article>

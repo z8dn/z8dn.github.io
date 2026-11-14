@@ -27,16 +27,16 @@
 
 @layer components {
   .prose {
-    @apply text-foreground font-mono text-[0.9375rem] leading-7;
+    @apply text-foreground font-sans text-[1.0625rem] leading-[1.75];
 
     :where(p):not(:where(.not-prose, .not-prose *)) {
-      @apply text-foreground/80 my-5;
+      @apply text-foreground/85 my-5;
     }
 
     :where(h1, h2, h3, h4, h5, h6):not(:where(.not-prose, .not-prose *)) {
-      @apply text-foreground scroll-mt-32 font-medium xl:scroll-mt-20;
-      font-family: var(--font-pixel);
-      line-height: 1.6;
+      @apply text-foreground scroll-mt-32 font-semibold xl:scroll-mt-20;
+      letter-spacing: -0.03em;
+      line-height: 1.15;
     }
 
     :first-child:not(:where(.not-prose, .not-prose *)) {
@@ -45,29 +45,27 @@
 
     /* Don't use an <h1> in your posts, one is already generated in blog/[...id].astro */
     :where(h1):not(:where(.not-prose, .not-prose *)) {
-      @apply mt-8 mb-6 text-xl;
+      @apply mt-12 mb-6 text-4xl;
     }
 
     :where(h2):not(:where(.not-prose, .not-prose *)) {
-      @apply mt-8 mb-4 text-base;
-      color: var(--accent);
+      @apply mt-14 mb-4 text-3xl;
     }
 
     :where(h3):not(:where(.not-prose, .not-prose *)) {
-      @apply mt-8 mb-4 text-sm;
-      color: var(--accent);
+      @apply mt-10 mb-3 text-2xl;
     }
 
     :where(h4):not(:where(.not-prose, .not-prose *)) {
-      @apply mt-7 mb-3 text-sm;
+      @apply mt-8 mb-3 text-xl;
     }
 
     :where(h5, h6):not(:where(.not-prose, .not-prose *)) {
-      @apply mt-5 mb-3;
+      @apply mt-6 mb-3 text-base;
     }
 
     :where(a):not(:where(.not-prose, .not-prose *)) {
-      @apply text-foreground decoration-muted-foreground hover:decoration-foreground font-medium break-words underline underline-offset-[3px] transition-colors;
+      @apply text-accent decoration-accent/30 hover:decoration-accent font-medium break-words underline underline-offset-[3px] transition-colors;
     }
 
     :where(strong):not(:where(.not-prose, .not-prose *)) {
@@ -75,16 +73,16 @@
     }
 
     :where(ul):not(:where(.not-prose, .not-prose *)) {
-      @apply marker:text-foreground/30 my-5 ml-6 list-disc [&>li]:mt-2;
+      @apply marker:text-accent my-5 ml-6 list-disc [&>li]:mt-2;
     }
 
     :where(ol):not(:where(.not-prose, .not-prose *)) {
-      @apply marker:text-foreground/30 my-5 ml-6 list-decimal [&>li]:mt-2;
+      @apply marker:text-accent my-5 ml-6 list-decimal [&>li]:mt-2;
       @apply [&[type='A']]:list-[upper-alpha] [&[type='I']]:list-[upper-roman] [&[type='a']]:list-[lower-alpha] [&[type='i']]:list-[lower-roman];
     }
 
     :where(li):not(:where(.not-prose, .not-prose *)) {
-      @apply text-foreground/80 pl-2 [&>p]:my-0;
+      @apply text-foreground/85 pl-2 [&>p]:my-0;
     }
 
     :where(ul ul, ol ol, ul ol, ol ul):not(:where(.not-prose, .not-prose *)) {
@@ -92,16 +90,16 @@
     }
 
     :where(code):not(:where(.not-prose, .not-prose *)) {
-      @apply bg-muted/50 text-foreground relative rounded-sm px-[0.3rem] py-[0.2rem] text-sm font-medium break-words;
+      @apply bg-muted text-foreground relative rounded-sm px-[0.3rem] py-[0.15rem] font-mono text-[0.875em] break-words;
       @apply [&>span[data-line='']>*]:text-(--shiki-light) dark:[&>span[data-line='']>*]:text-(--shiki-dark);
     }
 
     :where(blockquote):not(:where(.not-prose, .not-prose *)) {
-      @apply [&_*]:text-muted-foreground small my-6 border-l-2 pl-6;
+      @apply [&_*]:text-muted-foreground small border-border my-6 border-l pl-6 italic;
     }
 
     :where(hr):not(:where(.not-prose, .not-prose *)) {
-      @apply my-8 border-t;
+      @apply border-border my-10 border-t;
     }
 
     :where(table):not(:where(.not-prose, .not-prose *)) {
@@ -122,7 +120,7 @@
     }
 
     :where(td):not(:where(.not-prose, .not-prose *)) {
-      @apply text-foreground/80 small px-4 py-2 align-top break-words [&>*]:first:mt-0! [&>*]:last:mb-0!;
+      @apply text-foreground/85 small px-4 py-2 align-top break-words [&>*]:first:mt-0! [&>*]:last:mb-0!;
       @apply text-left [&[align=center]]:text-center [&[align=right]]:text-right;
     }
 
@@ -141,7 +139,7 @@
     }
 
     :where(kbd):not(:where(.not-prose, .not-prose *)) {
-      @apply text-foreground bg-muted rounded-md border px-2 py-1 text-xs font-medium;
+      @apply text-foreground bg-muted rounded-sm border px-2 py-1 font-mono text-xs;
     }
 
     :where(.katex-display):not(:where(.not-prose, .not-prose *)) {

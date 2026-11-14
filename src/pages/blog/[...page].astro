@@ -1,6 +1,5 @@
 ---
 import BlogCard from '@/components/BlogCard.astro'
-import Breadcrumbs from '@/components/Breadcrumbs.astro'
 import PageHead from '@/components/PageHead.astro'
 import PaginationComponent from '@/components/ui/pagination'
 import { SITE } from '@/consts'
@@ -20,16 +19,16 @@ export async function getStaticPaths({
 const { page } = Astro.props
 ---
 
-<Layout class="max-w-3xl">
+<Layout>
   <PageHead slot="head" title="Blog" />
-  <Breadcrumbs
-    items={[
-      { label: 'Blog', href: '/blog', icon: 'lucide:library-big' },
-      { label: `Page ${page.currentPage}`, icon: 'lucide:book-copy' },
-    ]}
-  />
+  <header class="flex flex-col gap-4 pb-6">
+    <h1 class="page-title">Writing</h1>
+    <p class="text-muted-foreground max-w-[56ch] text-lg leading-relaxed">
+      Notes on Android, Gradle build performance and the tooling around them.
+    </p>
+  </header>
 
-  <ul class="flex min-h-[calc(100vh-18rem)] flex-col gap-4">
+  <ul class="flex min-h-[calc(100vh-28rem)] flex-col">
     {page.data.map((post) => (
       <li>
         <BlogCard entry={post} />
