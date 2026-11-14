@@ -1,0 +1,70 @@
+---
+// The z8dn mark: a chip with "z8 / dn" on it and one red orientation dot.
+// Drawn as strokes so it does not depend on a font. `compact` is the "z8"
+// version for very small sizes (favicons use the same drawing).
+interface Props {
+  size?: number
+  compact?: boolean
+  class?: string
+}
+const { size = 28, compact = false, class: className } = Astro.props
+---
+
+<svg
+  class:list={['logo', className]}
+  width={size}
+  height={size}
+  viewBox="0 0 64 64"
+  aria-hidden="true"
+  focusable="false"
+>
+  <path
+    class="logo-pins"
+    d="M4 20h6M4 28h6M4 36h6M4 44h6M54 20h6M54 28h6M54 36h6M54 44h6M20 4v6M28 4v6M36 4v6M44 4v6M20 54v6M28 54v6M36 54v6M44 54v6"
+  ></path>
+  <rect class="logo-body" x="10" y="10" width="44" height="44" rx="8"></rect>
+  {
+    compact ? (
+      <g class="logo-glyphs" stroke-width="3.6">
+        <path d="M18.5 24H28.5L18.5 40H28.5" />
+        <circle cx="40.5" cy="27" r="3.9" />
+        <circle cx="40.5" cy="36" r="4.9" />
+      </g>
+    ) : (
+      <g class="logo-glyphs" stroke-width="2.7">
+        <path d="M20.5 19.5H29L20.5 30H29" />
+        <circle cx="39.5" cy="22" r="2.6" />
+        <circle cx="39.5" cy="27.2" r="3.1" />
+        <circle cx="24" cy="41.6" r="3.5" />
+        <path d="M27.5 34.5V45.3" />
+        <path d="M35.8 38.4V45.3M35.8 42a3.9 3.9 0 0 1 7.8 0V45.3" />
+      </g>
+    )
+  }
+  <circle class="logo-dot" cx="15.6" cy="15.6" r="1.8"></circle>
+</svg>
+
+<style>
+  .logo {
+    display: block;
+    flex-shrink: 0;
+  }
+  .logo-pins {
+    fill: none;
+    stroke: var(--foreground);
+    stroke-width: 3;
+    stroke-linecap: round;
+  }
+  .logo-body {
+    fill: var(--foreground);
+  }
+  .logo-glyphs {
+    fill: none;
+    stroke: var(--background);
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .logo-dot {
+    fill: var(--signal);
+  }
+</style>

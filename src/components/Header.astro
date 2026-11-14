@@ -1,4 +1,5 @@
 ---
+import Logo from '@/components/Logo.astro'
 import Link from '@/components/Link.astro'
 import ThemeToggle from '@/components/ThemeToggle.astro'
 import { NAV_LINKS, SITE } from '@/consts'
@@ -15,7 +16,7 @@ const path = Astro.url.pathname
       class="flex shrink-0 items-center gap-2.5"
       aria-label={`${SITE.title} home`}
     >
-      <span class="seal" aria-hidden="true">z8</span>
+      <Logo size={30} />
       <span class="text-[1.125rem] font-semibold tracking-tight">{SITE.title}</span>
     </Link>
     <div class="flex items-center gap-5 sm:gap-7">

@@ -1,5 +1,6 @@
 ---
 import { Icon } from 'astro-icon/components'
+import Logo from '@/components/Logo.astro'
 import PageHead from '@/components/PageHead.astro'
 import BoardTile from '@/components/tiles/BoardTile.astro'
 import Layout from '@/layouts/Layout.astro'
@@ -227,8 +228,7 @@ const pluginSlides = [
         <span class="hw hw--screws hw--ticks-b" data-part="Z8-01" aria-hidden="true"></span>
         <div class="intro-head">
           <span class="intro-name"
-            ><span class="seal" aria-hidden="true">z8</span
-            ><span class="wordmark">z8dn</span></span
+            ><Logo size={36} /><span class="wordmark">z8dn</span></span
           >
           <span class="intro-hello">Xin chào · 你好 · Hello</span>
         </div>
@@ -384,7 +384,7 @@ const pluginSlides = [
                   {c.image ? (
                     <Image src={c.image} alt="" width={56} height={56} />
                   ) : (
-                    c.self ? 'z8' : c.icon && <Icon name={c.icon} />
+                    c.self ? <Logo size={28} /> : c.icon && <Icon name={c.icon} />
                   )}
                 </span>
                 <span class="career-years">
